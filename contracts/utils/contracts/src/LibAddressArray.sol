@@ -16,7 +16,7 @@
 
 */
 
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.2;
 
 import "./LibBytes.sol";
 
@@ -30,8 +30,9 @@ library LibAddressArray {
     /// @param addressToAppend  Address to append.
     /// @return Array of addresses: [... addressArray, addressToAppend]
     function append(address[] memory addressArray, address addressToAppend) 
-        internal pure
-        returns (address[])
+        internal
+        pure
+        returns (address[] memory)
     {
         // Get stats on address array and free memory
         uint256 freeMemPtr = 0;
@@ -80,5 +81,19 @@ library LibAddressArray {
         }
         addressArray[addressArrayLength - 1] = addressToAppend;
         return addressArray;
+    }
+
+    function indexOf(address[] memory addressArray, address target)
+        internal
+        pure
+        returns (bool, uint256)
+    {
+        uint256 length = addressArray.length;
+        for (uint256 i = 0; i < length; i++) {
+            if (addressArray[i] == target) {
+                return (true, i);
+            }
+        }
+        return (false, 0);
     }
 }
