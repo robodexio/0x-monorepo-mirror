@@ -685,3 +685,22 @@ export interface DutchAuctionDetails {
     currentAmount: BigNumber;
     currentTimeSeconds: BigNumber;
 }
+
+export interface PackageJSON {
+    private?: boolean;
+    version: string;
+    name: string;
+    main?: string;
+    scripts?: { [command: string]: string };
+    config?: {
+        postpublish?: {
+            assets?: string[];
+            docOmitExports?: string[];
+            dockerHubRepo?: string;
+        };
+        abis?: string;
+    };
+    dependencies?: { [dependencyName: string]: string };
+    devDependencies?: { [dependencyName: string]: string };
+    workspaces?: string[];
+}

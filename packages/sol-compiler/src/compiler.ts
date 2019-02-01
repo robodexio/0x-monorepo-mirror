@@ -188,9 +188,7 @@ export class Compiler {
                 path.basename(contractSource.path, constants.SOLIDITY_FILE_EXTENSION),
             );
         } else {
-            contractNamesToCompile = this._specifiedContracts.map(specifiedContract =>
-                path.basename(specifiedContract, constants.SOLIDITY_FILE_EXTENSION),
-            );
+            return this._specifiedContracts;
         }
         return contractNamesToCompile;
     }
@@ -208,12 +206,9 @@ export class Compiler {
 
         for (const contractName of contractNames) {
             const contractSource = this._resolver.resolve(contractName);
-            const sourceTreeHashHex = getSourceTreeHash(
-                this._resolver,
-                path.join(this._contractsDir, contractSource.path),
-            ).toString('hex');
+            const sourceTreeHashHex = getSourceTreeHash(this._resolver, contractSource.path).toString('hex');
             const contractData = {
-                contractName,
+                contractName: path.basename(contractName, constants.SOLIDITY_FILE_EXTENSION),
                 currentArtifactIfExists: await getContractArtifactIfExistsAsync(this._artifactsDir, contractName),
                 sourceTreeHashHex: `0x${sourceTreeHashHex}`,
             };

@@ -2,10 +2,7 @@
     "artifactsDir": "./generated-artifacts",
     "contractsDir": "./contracts",
     "compilerSettings": {
-        "optimizer": {
-            "enabled": true,
-            "runs": 1000000
-        },
+        "optimizer": { "enabled": true, "runs": 1000000 },
         "outputSelection": {
             "*": {
                 "*": [
@@ -19,13 +16,13 @@
         }
     },
     "contracts": [
-        "TestLibs",
-        "LibOrder",
-        "LibMath",
-        "LibFillResults",
-        "LibAbiEncoder",
-        "LibEIP712",
-        "LibAssetProxyErrors",
-        "LibConstants"
+        "src/LibAbiEncoder.sol",
+        "src/LibAssetProxyErrors.sol",
+        "src/LibConstants.sol",
+        "src/LibEIP712.sol",
+        "src/LibFillResults.sol",
+        "src/LibMath.sol",
+        "src/LibOrder.sol",
+        "test/TestLibs.sol"
     ]
 }
