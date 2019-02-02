@@ -41,6 +41,8 @@ export const constants = {
     NULL_ADDRESS: '0x0000000000000000000000000000000000000000',
     UNLIMITED_ALLOWANCE_IN_BASE_UNITS: new BigNumber(2).pow(256).minus(1),
     TESTRPC_PRIVATE_KEYS: _.map(TESTRPC_PRIVATE_KEYS_STRINGS, privateKeyString => ethUtil.toBuffer(privateKeyString)),
+    INITIAL_BITDEX_BALANCE: Web3Wrapper.toBaseUnitAmount(new BigNumber(10000), 18),
+    INITIAL_BITDEX_ALLOWANCE: Web3Wrapper.toBaseUnitAmount(new BigNumber(10000), 18),
     INITIAL_ERC20_BALANCE: Web3Wrapper.toBaseUnitAmount(new BigNumber(10000), 18),
     INITIAL_ERC20_ALLOWANCE: Web3Wrapper.toBaseUnitAmount(new BigNumber(10000), 18),
     STATIC_ORDER_PARAMS: {

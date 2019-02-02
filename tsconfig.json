@@ -21,6 +21,7 @@
     "include": [],
     "references": [
         { "path": "./contracts/asset-proxy" },
+        { "path": "./contracts/bitdex" },
         { "path": "./contracts/erc20" },
         { "path": "./contracts/erc721" },
         { "path": "./contracts/exchange" },

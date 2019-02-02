@@ -1,5 +1,6 @@
 import {
     AssetProxyId,
+    BitDexAssetData,
     ERC20AssetData,
     ERC721AssetData,
     MultiAssetData,
@@ -15,6 +16,37 @@ const encodingRules: AbiEncoder.EncodingRules = { shouldOptimize: true };
 const decodingRules: AbiEncoder.DecodingRules = { shouldConvertStructsToObjects: true };
 
 export const assetDataUtils = {
+    /**
+     * Encodes an BitDEX token address into a hex encoded assetData string, usable in the makerAssetData or
+     * takerAssetData fields in a 0x order.
+     * @param tokenAddress  The BitDEX token address to encode
+     * @return The hex encoded assetData string
+     */
+    encodeBitDexAssetData(tokenAddress: string): string {
+        const abiEncoder = new AbiEncoder.Method(constants.BITDEX_METHOD_ABI);
+        const args = [tokenAddress];
+        const assetData = abiEncoder.encode(args, encodingRules);
+        return assetData;
+    },
+    /**
+     * Decodes an BitDEX assetData hex string into it's corresponding BitDEX tokenAddress & assetProxyId
+     * @param assetData Hex encoded assetData string to decode
+     * @return An object containing the decoded tokenAddress & assetProxyId
+     */
+    decodeBitDexAssetData(assetData: string): BitDexAssetData {
+        assetDataUtils.assertIsBitDexAssetData(assetData);
+        const assetProxyId = assetDataUtils.decodeAssetProxyId(assetData);
+        const abiEncoder = new AbiEncoder.Method(constants.BITDEX_METHOD_ABI);
+        const decodedAssetData = abiEncoder.decode(assetData, decodingRules);
+        return {
+            assetProxyId,
+            // TODO(abandeali1): fix return types for `AbiEncoder.Method.decode` so that we can remove type assertion
+            tokenAddress: (decodedAssetData as any).tokenContract,
+            side: new BigNumber(0),
+            pnl: new BigNumber(0),
+            timeLock: new BigNumber(0),
+        };
+    },
     /**
      * Encodes an ERC20 token address into a hex encoded assetData string, usable in the makerAssetData or
      * takerAssetData fields in a 0x order.
@@ -172,6 +204,7 @@ export const assetDataUtils = {
         }
         const assetProxyId = assetData.slice(0, constants.SELECTOR_CHAR_LENGTH_WITH_PREFIX);
         if (
+            assetProxyId !== AssetProxyId.BitDex &&
             assetProxyId !== AssetProxyId.ERC20 &&
             assetProxyId !== AssetProxyId.ERC721 &&
             assetProxyId !== AssetProxyId.MultiAsset
@@ -179,6 +212,13 @@ export const assetDataUtils = {
             throw new Error(`Invalid assetProxyId: ${assetProxyId}`);
         }
         return assetProxyId;
+    },
+    /**
+     * Checks if the decoded asset data is valid BitDEX data
+     * @param decodedAssetData The decoded asset data to check
+     */
+    isBitDexAssetData(decodedAssetData: SingleAssetData | MultiAssetData): decodedAssetData is BitDexAssetData {
+        return decodedAssetData.assetProxyId === AssetProxyId.BitDex;
     },
     /**
      * Checks if the decoded asset data is valid ERC20 data
@@ -200,6 +240,27 @@ export const assetDataUtils = {
      */
     isMultiAssetData(decodedAssetData: SingleAssetData | MultiAssetData): decodedAssetData is MultiAssetData {
         return decodedAssetData.assetProxyId === AssetProxyId.MultiAsset;
+    },
+    /**
+     * Throws if the length or assetProxyId are invalid for the BitDexProxy.
+     * @param assetData Hex encoded assetData string
+     */
+    assertIsBitDexAssetData(assetData: string): void {
+        if (assetData.length < constants.BITDEX_ASSET_DATA_MIN_CHAR_LENGTH_WITH_PREFIX) {
+            throw new Error(
+                `Could not decode BitDEX Proxy Data. Expected length of encoded data to be at least ${
+                    constants.BITDEX_ASSET_DATA_MIN_CHAR_LENGTH_WITH_PREFIX
+                }. Got ${assetData.length}`,
+            );
+        }
+        const assetProxyId = assetDataUtils.decodeAssetProxyId(assetData);
+        if (assetProxyId !== AssetProxyId.BitDex) {
+            throw new Error(
+                `Could not decode BitDEX assetData. Expected assetProxyId to be BitDEX (${
+                    AssetProxyId.BitDex
+                }), but got ${assetProxyId}`,
+            );
+        }
     },
     /**
      * Throws if the length or assetProxyId are invalid for the ERC20Proxy.
@@ -271,6 +332,9 @@ export const assetDataUtils = {
     validateAssetDataOrThrow(assetData: string): void {
         const assetProxyId = assetDataUtils.decodeAssetProxyId(assetData);
         switch (assetProxyId) {
+            case AssetProxyId.BitDex:
+                assetDataUtils.assertIsBitDexAssetData(assetData);
+                break;
             case AssetProxyId.ERC20:
                 assetDataUtils.assertIsERC20AssetData(assetData);
                 break;
@@ -287,11 +351,14 @@ export const assetDataUtils = {
     /**
      * Decode any assetData into it's corresponding assetData object
      * @param assetData Hex encoded assetData string to decode
-     * @return Either a ERC20 or ERC721 assetData object
+     * @return One of BitDEX, ERC20 or ERC721 assetData object
      */
     decodeAssetDataOrThrow(assetData: string): SingleAssetData | MultiAssetData {
         const assetProxyId = assetDataUtils.decodeAssetProxyId(assetData);
         switch (assetProxyId) {
+            case AssetProxyId.BitDex:
+                const bitDexAssetData = assetDataUtils.decodeBitDexAssetData(assetData);
+                return bitDexAssetData;
             case AssetProxyId.ERC20:
                 const erc20AssetData = assetDataUtils.decodeERC20AssetData(assetData);
                 return erc20AssetData;

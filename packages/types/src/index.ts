@@ -155,9 +155,18 @@ export enum SignatureType {
 }
 
 export enum AssetProxyId {
+    BitDex = '0x5d388e17',
     ERC20 = '0xf47261b0',
     ERC721 = '0x02571792',
     MultiAsset = '0x94cfcdd7',
+}
+
+export interface BitDexAssetData {
+    assetProxyId: string;
+    tokenAddress: string;
+    side: BigNumber;
+    pnl: BigNumber;
+    timeLock: BigNumber;
 }
 
 export interface ERC20AssetData {
@@ -171,7 +180,7 @@ export interface ERC721AssetData {
     tokenId: BigNumber;
 }
 
-export type SingleAssetData = ERC20AssetData | ERC721AssetData;
+export type SingleAssetData = BitDexAssetData | ERC20AssetData | ERC721AssetData;
 
 export interface MultiAssetData {
     assetProxyId: string;
@@ -234,6 +243,8 @@ export enum RevertReason {
     LibBytesGreaterOrEqualTo32LengthRequired = 'GREATER_OR_EQUAL_TO_32_LENGTH_REQUIRED',
     LibBytesGreaterOrEqualToNestedBytesLengthRequired = 'GREATER_OR_EQUAL_TO_NESTED_BYTES_LENGTH_REQUIRED',
     LibBytesGreaterOrEqualToSourceBytesLengthRequired = 'GREATER_OR_EQUAL_TO_SOURCE_BYTES_LENGTH_REQUIRED',
+    BitDexInsufficientBalance = 'BITDEX_INSUFFICIENT_BALANCE',
+    BitDexInsufficientAllowance = 'BITDEX_INSUFFICIENT_ALLOWANCE',
     Erc20InsufficientBalance = 'ERC20_INSUFFICIENT_BALANCE',
     Erc20InsufficientAllowance = 'ERC20_INSUFFICIENT_ALLOWANCE',
     FeePercentageTooLarge = 'FEE_PERCENTAGE_TOO_LARGE',

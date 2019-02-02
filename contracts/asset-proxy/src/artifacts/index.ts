@@ -1,5 +1,6 @@
 import { ContractArtifact } from 'ethereum-types';
 
+import * as BitDexProxy from '../../generated-artifacts/BitDexProxy.json';
 import * as ERC20Proxy from '../../generated-artifacts/ERC20Proxy.json';
 import * as ERC721Proxy from '../../generated-artifacts/ERC721Proxy.json';
 import * as IAssetData from '../../generated-artifacts/IAssetData.json';
@@ -12,6 +13,7 @@ export const artifacts = {
     IAuthorizable: IAuthorizable as ContractArtifact,
     IAssetData: IAssetData as ContractArtifact,
     IAssetProxy: IAssetProxy as ContractArtifact,
+    BitDexProxy: BitDexProxy as ContractArtifact,
     ERC20Proxy: ERC20Proxy as ContractArtifact,
     ERC721Proxy: ERC721Proxy as ContractArtifact,
     MixinAuthorizable: MixinAuthorizable as ContractArtifact,

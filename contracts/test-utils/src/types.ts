@@ -2,6 +2,12 @@ import { OrderWithoutExchangeAddress } from '@0x/types';
 import { BigNumber } from '@0x/utils';
 import { AbiDefinition } from 'ethereum-types';
 
+export interface BitDexBalancesByOwner {
+    [ownerAddress: string]: {
+        [tokenAddress: string]: BigNumber;
+    };
+}
+
 export interface ERC20BalancesByOwner {
     [ownerAddress: string]: {
         [tokenAddress: string]: BigNumber;
@@ -84,6 +90,7 @@ export enum ContractName {
     MultiSigWalletWithTimeLock = 'MultiSigWalletWithTimeLock',
     Exchange = 'Exchange',
     ZRXToken = 'ZRXToken',
+    BDTToken = 'BDTToken',
     DummyERC20Token = 'DummyERC20Token',
     EtherToken = 'WETH9',
     DutchAuction = 'DutchAuction',
@@ -95,6 +102,7 @@ export enum ContractName {
     TestAssetProxyDispatcher = 'TestAssetProxyDispatcher',
     TestLibs = 'TestLibs',
     TestSignatureValidator = 'TestSignatureValidator',
+    BitDexProxy = 'BitDexProxy',
     ERC20Proxy = 'ERC20Proxy',
     ERC721Proxy = 'ERC721Proxy',
     DummyERC721Receiver = 'DummyERC721Receiver',

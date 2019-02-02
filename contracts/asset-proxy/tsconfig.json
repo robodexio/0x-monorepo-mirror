@@ -10,6 +10,7 @@
         "./generated-artifacts/IAssetData.json",
         "./generated-artifacts/IAssetProxy.json",
         "./generated-artifacts/IAuthorizable.json",
+        "./generated-artifacts/BitDexProxy.json",
         "./generated-artifacts/ERC20Proxy.json",
         "./generated-artifacts/ERC721Proxy.json",
         "./generated-artifacts/MixinAuthorizable.json",

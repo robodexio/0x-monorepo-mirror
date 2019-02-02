@@ -1,4 +1,5 @@
 import {
+    PrivateKeyWalletSubprovider,
     EmptyWalletSubprovider,
     FakeGasEstimateSubprovider,
     GanacheSubprovider,
@@ -18,6 +19,7 @@ export interface Web3Config {
     rpcUrl?: string; // default: localhost:8545
     shouldUseFakeGasEstimate?: boolean; // default: true
     ganacheDatabasePath?: string; // default: undefined, creates a tmp dir
+    senderPrivateKey?: string; // default: undefined
 }
 
 export const web3Factory = {
@@ -27,7 +29,11 @@ export const web3Factory = {
         config.shouldUseFakeGasEstimate =
             _.isUndefined(config.shouldUseFakeGasEstimate) || config.shouldUseFakeGasEstimate;
         if (!hasAddresses) {
-            provider.addProvider(new EmptyWalletSubprovider());
+            if (config.senderPrivateKey && config.senderPrivateKey.length > 0) {
+                provider.addProvider(new PrivateKeyWalletSubprovider(config.senderPrivateKey));
+            } else {
+                provider.addProvider(new EmptyWalletSubprovider());
+            }
         }
 
         if (config.shouldUseFakeGasEstimate) {

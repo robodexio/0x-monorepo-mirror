@@ -1,5 +1,14 @@
 import { BigNumber } from '@0x/utils';
 
+export interface BitDexToken {
+    address?: string;
+    name: string;
+    symbol: string;
+    decimals: BigNumber;
+    ipfsHash: string;
+    swarmHash: string;
+}
+
 export interface ERC20Token {
     address?: string;
     name: string;
@@ -20,6 +29,7 @@ export enum ContractName {
     MultiSigWalletWithTimeLock = 'MultiSigWalletWithTimeLock',
     Exchange = 'Exchange',
     ZRXToken = 'ZRXToken',
+    BDTToken = 'BDTToken',
     DummyToken = 'DummyToken',
     WETH9 = 'WETH9',
     MultiSigWalletWithTimeLockExceptRemoveAuthorizedAddress = 'MultiSigWalletWithTimeLockExceptRemoveAuthorizedAddress',

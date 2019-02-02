@@ -2,12 +2,13 @@ import { BigNumber } from '@0x/utils';
 
 export const constants = {
     ASSET_PROXY_OWNER_OWNERS: [
-        '0x9df8137872ac09a8fee71d0da5c7539923fb9bf0',
-        '0xcf34d44db312d188789f43a63d11cf2bebb4da15',
-        '0x73fd50f2a6beac9cdac9fe87ef68a18edc415831',
+        '0xb51b0d08a00a5689c0efd4add4636c55914a3b11',
+        '0x091fde48c9cedd5e85ecc6b62569411b8ade6f7f',
+        '0xaef6d87d151c803c1c2c40d0270c95e0280c3f48',
     ],
     ASSET_PROXY_OWNER_TIMELOCK: new BigNumber(0),
     ASSET_PROXY_OWNER_CONFIRMATIONS: new BigNumber(1),
+    BITDEX_PROXY_ID: '0x5d388e17',
     ERC20_PROXY_ID: '0xf47261b0',
     ERC721_PROXY_ID: '0x02571792',
     NULL_ADDRESS: '0x0000000000000000000000000000000000000000',

@@ -23,6 +23,7 @@
         "IAssetData",
         "IAssetProxy",
         "IAuthorizable",
+        "BitDexProxy",
         "ERC20Proxy",
         "ERC721Proxy",
         "MixinAuthorizable",

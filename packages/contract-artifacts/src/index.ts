@@ -1,4 +1,7 @@
 import * as AssetProxyOwner from '../artifacts/AssetProxyOwner.json';
+import * as BDTToken from '../artifacts/BDTToken.json';
+import * as BitDexProxy from '../artifacts/BitDexProxy.json';
+import * as BitDexToken from '../artifacts/BitDexToken.json';
 import * as DummyERC20Token from '../artifacts/DummyERC20Token.json';
 import * as DummyERC721Token from '../artifacts/DummyERC721Token.json';
 import * as DutchAuction from '../artifacts/DutchAuction.json';
@@ -17,6 +20,9 @@ import * as ZRXToken from '../artifacts/ZRXToken.json';
 
 export {
     AssetProxyOwner,
+    BDTToken,
+    BitDexProxy,
+    BitDexToken,
     DutchAuction,
     DummyERC20Token,
     DummyERC721Token,

@@ -7,7 +7,8 @@ import { Web3Wrapper } from '@0x/web3-wrapper';
 import { Provider, TxData } from 'ethereum-types';
 import * as _ from 'lodash';
 
-import { erc20TokenInfo, erc721TokenInfo } from './utils/token_info';
+import { constants } from './utils/constants';
+import { bitDexTokenInfo, erc20TokenInfo, erc721TokenInfo } from './utils/token_info';
 
 /**
  * Creates and deploys all the contracts that are required for the latest
@@ -20,26 +21,42 @@ export async function runMigrationsAsync(provider: Provider, txDefaults: TxData)
     const web3Wrapper = new Web3Wrapper(provider);
 
     // Proxies
+    const bitDexProxy = await wrappers.BitDexProxyContract.deployFrom0xArtifactAsync(
+        artifacts.BitDexProxy,
+        provider,
+        {...txDefaults, ...{ gas: 1250000 }},
+    );
     const erc20Proxy = await wrappers.ERC20ProxyContract.deployFrom0xArtifactAsync(
         artifacts.ERC20Proxy,
         provider,
-        txDefaults,
+        {...txDefaults, ...{ gas: 1250000 }},
     );
     const erc721Proxy = await wrappers.ERC721ProxyContract.deployFrom0xArtifactAsync(
         artifacts.ERC721Proxy,
         provider,
-        txDefaults,
+        {...txDefaults, ...{ gas: 1250000 }},
+    );
+
+    // BDT
+    const bdtToken = await wrappers.BDTTokenContract.deployFrom0xArtifactAsync(
+        artifacts.BDTToken,
+        provider,
+        {...txDefaults, ...{ gas: 1000000 }},
     );
 
     // ZRX
     const zrxToken = await wrappers.ZRXTokenContract.deployFrom0xArtifactAsync(
         artifacts.ZRXToken,
         provider,
-        txDefaults,
+        {...txDefaults, ...{ gas: 1000000 }},
     );
 
     // Ether token
-    const etherToken = await wrappers.WETH9Contract.deployFrom0xArtifactAsync(artifacts.WETH9, provider, txDefaults);
+    const etherToken = await wrappers.WETH9Contract.deployFrom0xArtifactAsync(
+        artifacts.WETH9,
+        provider,
+        {...txDefaults, ...{ gas: 1250000 }},
+    );
 
     // Exchange
     const zrxAssetData = assetDataUtils.encodeERC20AssetData(zrxToken.address);
@@ -51,76 +68,123 @@ export async function runMigrationsAsync(provider: Provider, txDefaults: TxData)
     );
 
     // Dummy ERC20 tokens
-    for (const token of erc20TokenInfo) {
-        const totalSupply = new BigNumber(1000000000000000000000000000);
-        // tslint:disable-next-line:no-unused-variable
-        const dummyErc20Token = await wrappers.DummyERC20TokenContract.deployFrom0xArtifactAsync(
-            artifacts.DummyERC20Token,
-            provider,
-            txDefaults,
-            token.name,
-            token.symbol,
-            token.decimals,
-            totalSupply,
-        );
-    }
+    // for (const token of erc20TokenInfo) {
+    //     const totalSupply = new BigNumber(1000000000000000000000000000);
+    //     // tslint:disable-next-line:no-unused-variable
+    //     const dummyErc20Token = await wrappers.DummyERC20TokenContract.deployFrom0xArtifactAsync(
+    //         artifacts.DummyERC20Token,
+    //         provider,
+    //         txDefaults,
+    //         token.name,
+    //         token.symbol,
+    //         token.decimals,
+    //         totalSupply,
+    //     );
+    // }
 
     // ERC721
     // tslint:disable-next-line:no-unused-variable
-    const cryptoKittieToken = await wrappers.DummyERC721TokenContract.deployFrom0xArtifactAsync(
-        artifacts.DummyERC721Token,
-        provider,
-        txDefaults,
-        erc721TokenInfo[0].name,
-        erc721TokenInfo[0].symbol,
-    );
+    // const cryptoKittieToken = await wrappers.DummyERC721TokenContract.deployFrom0xArtifactAsync(
+    //     artifacts.DummyERC721Token,
+    //     provider,
+    //     txDefaults,
+    //     erc721TokenInfo[0].name,
+    //     erc721TokenInfo[0].symbol,
+    // );
 
     const multiAssetProxy = await wrappers.MultiAssetProxyContract.deployFrom0xArtifactAsync(
         artifacts.MultiAssetProxy,
         provider,
-        txDefaults,
+        {...txDefaults, ...{ gas: 1750000 }},
     );
 
     await web3Wrapper.awaitTransactionSuccessAsync(
-        await erc20Proxy.addAuthorizedAddress.sendTransactionAsync(exchange.address, txDefaults),
+        await bitDexProxy.addAuthorizedAddress.sendTransactionAsync(exchange.address, {
+            from: txDefaults.from,
+            gas: 100000,
+        }),
     );
     await web3Wrapper.awaitTransactionSuccessAsync(
-        await erc721Proxy.addAuthorizedAddress.sendTransactionAsync(exchange.address, txDefaults),
+        await erc20Proxy.addAuthorizedAddress.sendTransactionAsync(exchange.address, {
+            from: txDefaults.from,
+            gas: 100000,
+        }),
     );
     await web3Wrapper.awaitTransactionSuccessAsync(
-        await multiAssetProxy.addAuthorizedAddress.sendTransactionAsync(exchange.address, txDefaults),
+        await erc721Proxy.addAuthorizedAddress.sendTransactionAsync(exchange.address, {
+            from: txDefaults.from,
+            gas: 100000,
+        }),
+    );
+    await web3Wrapper.awaitTransactionSuccessAsync(
+        await multiAssetProxy.addAuthorizedAddress.sendTransactionAsync(exchange.address, {
+            from: txDefaults.from,
+            gas: 100000,
+        }),
     );
 
     // MultiAssetProxy
     await web3Wrapper.awaitTransactionSuccessAsync(
-        await erc20Proxy.addAuthorizedAddress.sendTransactionAsync(multiAssetProxy.address, txDefaults),
+        await bitDexProxy.addAuthorizedAddress.sendTransactionAsync(multiAssetProxy.address, {
+            from: txDefaults.from,
+            gas: 100000,
+        }),
     );
     await web3Wrapper.awaitTransactionSuccessAsync(
-        await erc721Proxy.addAuthorizedAddress.sendTransactionAsync(multiAssetProxy.address, txDefaults),
+        await erc20Proxy.addAuthorizedAddress.sendTransactionAsync(multiAssetProxy.address, {
+            from: txDefaults.from,
+            gas: 100000,
+        }),
     );
     await web3Wrapper.awaitTransactionSuccessAsync(
-        await multiAssetProxy.registerAssetProxy.sendTransactionAsync(erc20Proxy.address, txDefaults),
+        await erc721Proxy.addAuthorizedAddress.sendTransactionAsync(multiAssetProxy.address, {
+            from: txDefaults.from,
+            gas: 100000,
+        }),
     );
     await web3Wrapper.awaitTransactionSuccessAsync(
-        await multiAssetProxy.registerAssetProxy.sendTransactionAsync(erc721Proxy.address, txDefaults),
+        await multiAssetProxy.registerAssetProxy.sendTransactionAsync(bitDexProxy.address, {
+            gas: 100000,
+        }),
+    );
+    await web3Wrapper.awaitTransactionSuccessAsync(
+        await multiAssetProxy.registerAssetProxy.sendTransactionAsync(erc20Proxy.address, {
+            gas: 100000,
+        }),
+    );
+    await web3Wrapper.awaitTransactionSuccessAsync(
+        await multiAssetProxy.registerAssetProxy.sendTransactionAsync(erc721Proxy.address, {
+            gas: 100000,
+        }),
     );
 
     // Register the Asset Proxies to the Exchange
     await web3Wrapper.awaitTransactionSuccessAsync(
-        await exchange.registerAssetProxy.sendTransactionAsync(erc20Proxy.address, txDefaults),
+        await exchange.registerAssetProxy.sendTransactionAsync(bitDexProxy.address, {
+            gas: 100000,
+        }),
     );
     await web3Wrapper.awaitTransactionSuccessAsync(
-        await exchange.registerAssetProxy.sendTransactionAsync(erc721Proxy.address, txDefaults),
+        await exchange.registerAssetProxy.sendTransactionAsync(erc20Proxy.address, {
+            gas: 100000,
+        }),
     );
     await web3Wrapper.awaitTransactionSuccessAsync(
-        await exchange.registerAssetProxy.sendTransactionAsync(multiAssetProxy.address, txDefaults),
+        await exchange.registerAssetProxy.sendTransactionAsync(erc721Proxy.address, {
+            gas: 100000,
+        }),
+    );
+    await web3Wrapper.awaitTransactionSuccessAsync(
+        await exchange.registerAssetProxy.sendTransactionAsync(multiAssetProxy.address, {
+            gas: 100000,
+        }),
     );
 
     // Forwarder
     const forwarder = await wrappers.ForwarderContract.deployFrom0xArtifactAsync(
         artifacts.Forwarder,
         provider,
-        txDefaults,
+        {...txDefaults, ...{ gas: 3500000 }},
         exchange.address,
         assetDataUtils.encodeERC20AssetData(zrxToken.address),
         assetDataUtils.encodeERC20AssetData(etherToken.address),
@@ -130,7 +194,7 @@ export async function runMigrationsAsync(provider: Provider, txDefaults: TxData)
     const orderValidator = await wrappers.OrderValidatorContract.deployFrom0xArtifactAsync(
         artifacts.OrderValidator,
         provider,
-        txDefaults,
+        {...txDefaults, ...{ gas: 2500000 }},
         exchange.address,
         zrxAssetData,
     );
@@ -139,13 +203,13 @@ export async function runMigrationsAsync(provider: Provider, txDefaults: TxData)
     const dutchAuction = await wrappers.DutchAuctionContract.deployFrom0xArtifactAsync(
         artifacts.DutchAuction,
         provider,
-        txDefaults,
+        {...txDefaults, ...{ gas: 1500000 }},
         exchange.address,
     );
 
     // Multisigs
-    const accounts: string[] = await web3Wrapper.getAvailableAddressesAsync();
-    const owners = _.uniq([accounts[0], accounts[1], txDefaults.from]);
+    const accounts: string[] = constants.ASSET_PROXY_OWNER_OWNERS;
+    const owners = [accounts[0], accounts[1], accounts[2]];
     const confirmationsRequired = new BigNumber(2);
     const secondsRequired = new BigNumber(0);
 
@@ -153,22 +217,37 @@ export async function runMigrationsAsync(provider: Provider, txDefaults: TxData)
     const assetProxyOwner = await wrappers.AssetProxyOwnerContract.deployFrom0xArtifactAsync(
         artifacts.AssetProxyOwner,
         provider,
-        txDefaults,
+        {...txDefaults, ...{ gas: 3000000 }},
         owners,
-        [erc20Proxy.address, erc721Proxy.address, multiAssetProxy.address],
+        [bitDexProxy.address, erc20Proxy.address, erc721Proxy.address, multiAssetProxy.address],
         confirmationsRequired,
         secondsRequired,
     );
 
     // Transfer Ownership to the Asset Proxy Owner
     await web3Wrapper.awaitTransactionSuccessAsync(
-        await erc20Proxy.transferOwnership.sendTransactionAsync(assetProxyOwner.address, txDefaults),
+        await bitDexProxy.transferOwnership.sendTransactionAsync(assetProxyOwner.address, {
+            from: txDefaults.from,
+            gas: 50000,
+        }),
     );
     await web3Wrapper.awaitTransactionSuccessAsync(
-        await erc721Proxy.transferOwnership.sendTransactionAsync(assetProxyOwner.address, txDefaults),
+        await erc20Proxy.transferOwnership.sendTransactionAsync(assetProxyOwner.address, {
+            from: txDefaults.from,
+            gas: 50000,
+        }),
     );
     await web3Wrapper.awaitTransactionSuccessAsync(
-        await multiAssetProxy.transferOwnership.sendTransactionAsync(assetProxyOwner.address, txDefaults),
+        await erc721Proxy.transferOwnership.sendTransactionAsync(assetProxyOwner.address, {
+            from: txDefaults.from,
+            gas: 50000,
+        }),
+    );
+    await web3Wrapper.awaitTransactionSuccessAsync(
+        await multiAssetProxy.transferOwnership.sendTransactionAsync(assetProxyOwner.address, {
+            from: txDefaults.from,
+            gas: 50000,
+        }),
     );
 
     // Fund the Forwarder with ZRX
@@ -179,8 +258,10 @@ export async function runMigrationsAsync(provider: Provider, txDefaults: TxData)
     );
 
     const contractAddresses = {
+        bitDexProxy: bitDexProxy.address,
         erc20Proxy: erc20Proxy.address,
         erc721Proxy: erc721Proxy.address,
+        bdtToken: bdtToken.address,
         zrxToken: zrxToken.address,
         etherToken: etherToken.address,
         exchange: exchange.address,

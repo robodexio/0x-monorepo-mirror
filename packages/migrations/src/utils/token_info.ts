@@ -1,6 +1,6 @@
 import { BigNumber, NULL_BYTES } from '@0x/utils';
 
-import { ERC20Token, ERC721Token } from '../types';
+import { BitDexToken, ERC20Token, ERC721Token } from '../types';
 
 export const etherTokenByNetwork: { [networkId: number]: { address: string } } = {
     3: {
@@ -16,6 +16,17 @@ export const etherTokenByNetwork: { [networkId: number]: { address: string } } =
         address: '',
     },
 };
+
+export const bitDexTokenInfo: BitDexToken[] = [
+    {
+        name: 'BitDEX Token',
+        symbol: 'BDT',
+        decimals: new BigNumber(18),
+        ipfsHash: NULL_BYTES,
+        swarmHash: NULL_BYTES,
+    },
+];
+
 export const erc20TokenInfo: ERC20Token[] = [
     {
         name: 'Augur Reputation Token',
