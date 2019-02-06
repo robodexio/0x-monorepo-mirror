@@ -16,7 +16,7 @@
 
 */
 
-pragma solidity 0.4.24;
+pragma solidity ^0.4.24;
 
 import "../src/MintableERC721Token.sol";
 import "@0x/contracts-utils/contracts/src/Ownable.sol";

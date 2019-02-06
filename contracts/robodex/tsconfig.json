@@ -7,7 +7,6 @@
     },
     "include": ["./src/**/*", "./test/**/*", "./generated-wrappers/**/*"],
     "files": [
-        "./generated-artifacts/IRoboDexToken.json",
         "./generated-artifacts/RoboDexToken.json",
         "./generated-artifacts/RDXToken.json"
     ],

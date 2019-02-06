@@ -1,12 +1,9 @@
 pragma solidity ^0.4.24;
 
 
-contract IRoboDexToken {
+contract IERC20Token {
 
-    enum Side {
-        SHORT, // Also means 'SELL'
-        LONG   // Also means 'BUY'
-    }
+    // EVENTS
 
     /// @dev Emits when ownership of any tokens changes by any mechanism.
     /// This event also emits when tokens are created (`from` == 0) and destroyed (`to` == 0).
@@ -14,6 +11,8 @@ contract IRoboDexToken {
     
     /// @dev Emits when the approved address for a tokens is changed or reaffirmed.
     event Approval(address indexed owner, address indexed spender, uint256 value);
+
+    // EXTERNAL FUNCTIONS
 
     /// @dev Sends `value` amount of tokens to account `to` from account `msg.sender`.
     /// @param to The address of the tokens recipient.
@@ -26,26 +25,16 @@ contract IRoboDexToken {
     /// @param from The address of the tokens sender.
     /// @param to The address of the tokens recipient.
     /// @param value The amount of tokens to be transferred.
-    /// @param side TODO: Describe it.
-    /// @param pnl TODO: Describe it.
-    /// @param timeLock TODO: Describe it.
     /// @return True if transfer was successful.
-    function transferFrom(
-        address from,
-        address to,
-        uint256 value,
-        Side side,
-        int256 pnl,
-        uint256 timeLock
-    )
-        external
-        returns (bool);
+    function transferFrom(address from, address to, uint256 value) external returns (bool);
     
     /// @dev Approves account `spender` by account `msg.sender` to spend `value` amount of tokens.
     /// @param spender The address of the account able to transfer the tokens.
     /// @param value The new amount of tokens to be approved for transfer.
     /// @return True if approve was successful.
     function approve(address spender, uint256 value) external returns (bool);
+
+    // EXTERNAL FUNCTIONS (VIEW)
 
     /// @dev Returns total amount of supplied tokens.
     /// @return Total amount of supplied tokens.

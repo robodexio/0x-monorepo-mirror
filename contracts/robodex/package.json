@@ -32,7 +32,7 @@
         "lint-contracts": "solhint -c ../.solhint.json contracts/**/**/**/**/*.sol"
     },
     "config": {
-        "abis": "generated-artifacts/@(IRoboDexToken|RoboDexToken|RDXToken).json"
+        "abis": "generated-artifacts/@(RoboDexToken|RDXToken).json"
     },
     "repository": {
         "type": "git",

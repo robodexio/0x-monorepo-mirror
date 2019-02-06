@@ -11,15 +11,14 @@
   limitations under the License.
 */
 
-pragma solidity 0.4.24;
+pragma solidity ^0.4.24;
 
 import "./MixinAuthorizable.sol";
 
 
-contract RoboDexProxy is
-    MixinAuthorizable
-{
-    // Id of this proxy.
+contract RoboDexProxy is MixinAuthorizable {
+    
+    // ID of this proxy.
     bytes4 constant internal PROXY_ID = bytes4(keccak256("RoboDexToken(address)"));
     
     // solhint-disable-next-line payable-fallback
@@ -174,8 +173,8 @@ contract RoboDexProxy is
         }
     }
 
-    /// @dev Gets the proxy id associated with the proxy address.
-    /// @return Proxy id.
+    /// @dev Returns the proxy ID associated with the proxy address.
+    /// @return Proxy ID.
     function getProxyId() external pure returns (bytes4) {
         return PROXY_ID;
     }

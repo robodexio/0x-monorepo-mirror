@@ -1,247 +1,326 @@
 pragma solidity ^0.4.24;
 
 import "@0x/contracts-utils/contracts/src/LibBytes.sol";
-import "@0x/contracts-utils/contracts/src/SafeMath.sol";
-import "./interfaces/IRoboDexToken.sol";
+import "./ERC20Token.sol";
 
 
-contract RoboDexToken is IRoboDexToken, SafeMath {
+contract RoboDexToken is ERC20Token {
     using LibBytes for bytes;
+
+    // STRUCTURES
+
+    enum TradeType {
+        SHORT, // SELL
+        LONG   // BUY
+    }
+
+    struct Position {
+        ERC20Token baseToken;
+        ERC20Token quoteToken;
+        address owner;
+        address trader;
+        TradeType tradeType;
+        int256 amount;
+        uint256 margin;
+        uint256 price;
+        uint256 filled;
+        uint256 timestamp;
+    }
 
     // EVENTS
 
-    event Verify0x(
-        address indexed from,
-        address indexed to,
-        Side indexed side,
-        uint256 value,
-        int256 pnl,
-        uint256 timeLock        
+    /// @dev Emits when position is opened.
+    event PositionOpened(
+        uint256 positionId,
+        address baseToken,
+        address quoteToken,
+        address indexed owner,
+        address indexed trader,
+        TradeType indexed tradeType,
+        int256 amount,
+        uint256 margin,
+        uint256 price
     );
 
-    // PUBLIC FUNCTIONS
+    /// @dev Emits when position is closed.
+    event PositionClosed(
+        uint256 positionId,
+        address indexed from,
+        address indexed to,
+        int256 amount
+    );
+    
+    // EXTERNAL FUNCTIONS
 
     constructor() public {
-        _timeToLive = block.timestamp + 14 days;
-        _totalSupply = INITIAL_SUPPLY;
-        _balances[msg.sender] = _totalSupply;
-        emit Transfer(address(0), msg.sender, _totalSupply);
+        _timeToLive = block.timestamp + INITIAL_LIFETIME;
     }
 
-    /// @dev Sends `value` amount of tokens to account `to` from account `msg.sender`.
-    /// @param to The address of the tokens recipient.
-    /// @param value The amount of tokens to be transferred.
-    /// @return True if transfer was successful.
-    function transfer(address to, uint256 value) external returns (bool) {
-        _transfer(msg.sender, to, value);
-        return true;
+    function peddle(
+        bytes makerAssetData,
+        bytes takerAssetData,
+        uint256 dexData
+    ) external returns (bool) {
+        Position memory makerPosition = parseAssetData(makerAssetData);
+        Position memory takerPosition = parseAssetData(takerAssetData);
+        uint256 makerPositionId = calculatePositionHash(makerPosition);
+        uint256 takerPositionId = calculatePositionHash(takerPosition);
+        bool makerOpening = isPositionOpened(makerPositionId);
+        bool takerOpening = isPositionOpened(takerPositionId);
+        // TODO: More checks
+        if (makerOpening && takerOpening) {
+            // Both maker and taker are opening positions
+            transferToken(makerPosition.baseToken, makerPosition.owner, address(this), makerPosition.margin);
+            transferToken(takerPosition.baseToken, takerPosition.owner, address(this), takerPosition.margin);
+            openPosition(
+                makerPosition.baseToken,
+                makerPosition.quoteToken,
+                makerPosition.owner,
+                makerPosition.trader,
+                makerPosition.tradeType,
+                makerPosition.amount,
+                makerPosition.margin,
+                makerPosition.price
+            );
+            openPosition(
+                takerPosition.baseToken,
+                takerPosition.quoteToken,
+                takerPosition.owner,
+                takerPosition.trader,
+                takerPosition.tradeType,
+                takerPosition.amount,
+                takerPosition.margin,
+                takerPosition.price
+            );
+        } else if (takerOpening) {
+            // Taker is opening position
+            transferToken(takerPosition.baseToken, takerPosition.owner, address(this), takerPosition.margin);
+            openPosition(
+                takerPosition.baseToken,
+                takerPosition.quoteToken,
+                takerPosition.owner,
+                takerPosition.trader,
+                takerPosition.tradeType,
+                takerPosition.amount,
+                takerPosition.margin,
+                takerPosition.price
+            );
+            closePosition(makerPositionId, makerPosition.owner, takerPosition.owner, dexData);
+        } else if (makerOpening) {
+            // Maker is opening position
+            transferToken(makerPosition.baseToken, makerPosition.owner, address(this), makerPosition.margin);
+            openPosition(
+                makerPosition.baseToken,
+                makerPosition.quoteToken,
+                makerPosition.owner,
+                makerPosition.trader,
+                makerPosition.tradeType,
+                makerPosition.amount,
+                makerPosition.margin,
+                makerPosition.price
+            );
+            closePosition(takerPositionId, takerPosition.owner, makerPosition.owner, dexData);
+        }
     }
 
-    /// @dev Sends `value` amount of tokens to account `to` from account `from` if enough amount of
-    /// tokens are approved by account `from` to spend by account `msg.sender`.
-    /// @param from The address of the tokens sender.
-    /// @param to The address of the tokens recipient.
-    /// @param value The amount of tokens to be transferred.
-    /// @param side TODO: Describe it.
-    /// @param pnl TODO: Describe it.
-    /// @param timeLock TODO: Describe it.
-    /// @return True if transfer was successful.
-    function transferFrom(
-        address from,
-        address to,
-        uint256 value,
-        Side side,
-        int256 pnl,
-        uint256 timeLock
-    )
-        external
-        returns (bool)
-    {
-        emit Verify0x(from, to, side, value, pnl, timeLock);
-
-        // TODO: Unpack
-        // TODO: Business logic
-        
-        // if (from != address(0)) {
-        //     bool signatureValid = validateSignature(from, value, side, pnl, timeLock, signature);
-        //     require(signatureValid, "INVALID_ORDER_SIGNATURE");
-        //     if (to != address(0)) { 
-        //         changePositionOwner(from, to, value, side);
-        //     } else {
-        //         liquidatePosition(from, value, side);
-        //     }
-        // } 
-        // else {
-        //     require(to != address(0), "INVALID_OPEN_ADDRESS");
-        //     createPosition(from, to, value, side);
-        // }
-
-        // TODO: Change this standard logic
-        //_decreaseAllowance(from, msg.sender, value);
-        //_transfer(from, to, value);
-        return true;
+    function getPositionInfo(uint256 positionId) external view returns (
+        address baseToken,
+        address quoteToken,
+        address owner,
+        address trader,
+        TradeType tradeType,
+        int256 amount,
+        uint256 margin,
+        uint256 price,
+        uint256 filled,
+        uint256 timestamp
+    ) {
+        Position memory position = _positions[positionId];
+        baseToken = position.baseToken;
+        quoteToken = position.quoteToken;
+        owner = position.owner;
+        trader = position.trader;
+        tradeType = position.tradeType;
+        amount = position.amount;
+        margin = position.margin;
+        price = position.price;
+        filled = position.filled;
+        timestamp = position.timestamp;
+    }
+    
+    function openPosition(
+        address baseToken,
+        address quoteToken,
+        address owner,
+        address trader,
+        TradeType tradeType,
+        int256 amount,
+        uint256 margin,
+        uint256 price
+    ) internal returns (uint256 positionId) {
+        require(
+            baseToken != address(0) && quoteToken != address(0) && baseToken != quoteToken,
+            "ERC20_TOKEN_ADDRESSES_INCORRECT"
+        );
+        require(
+            owner != address(0) && trader != address(0) && owner != trader,
+            "TRADER_ADDRESSES_INCORRECT"
+        );
+        require(
+            tradeType == TradeType.SHORT || tradeType == TradeType.LONG,
+            "TRADE_TYPE_INCORRECT"
+        );
+        Position memory position = Position(
+            ERC20Token(baseToken), ERC20Token(quoteToken),
+            owner, trader, tradeType, amount, margin, price, 0, now
+        );
+        positionId = calculatePositionHash(position);
+        require(_positions[positionId].timestamp == 0, "POSITION_ALREADY_OPENED");
+        _positions[positionId] = position;
+        emit PositionOpened(positionId, baseToken, quoteToken, owner, trader, tradeType, amount, margin, price);
     }
 
-    /// @dev Approves account with address `spender` to spend `value` amount of tokens on behalf of account `msg.sender`.
-    /// Beware that changing an allowance with this method brings the risk that someone may use both the old
-    /// and the new allowance by an unfortunate transaction ordering. One possible solution to mitigate this
-    /// rare condition is to first reduce the spender's allowance to 0 and set the desired value afterwards:
-    /// https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
-    /// @param spender Address which will be allowed to spend the tokens.
-    /// @param value Amount of tokens to allow to be spent.
-    /// @return True if approve was successful.
-    function approve(address spender, uint256 value) external returns (bool) {
-        _allowances[msg.sender][spender] = value;
-        emit Approval(msg.sender, spender, value);
-        return true;
+    function closePosition(
+        uint256 positionId,
+        address owner,
+        address trader,
+        uint256 dexData
+    ) internal {
+        Position storage position = _positions[positionId];
+        require(
+            position.timestamp > 0,
+            "POSITION_IS_NOT_OPENED"
+        );
+        require(
+            owner != address(0) && trader != address(0) && owner != trader,
+            "TRADER_ADDRESSES_INCORRECT"
+        );
+        // TODO: Add more checks (owner, trader, dexData)
+        int256 balance = calculatePNL(dexData);
+        // TODO: Liquidate trades in the position
+        if (position.tradeType == TradeType.SHORT) {
+            // TODO
+            transferTokenSigned(position.baseToken, owner, trader, balance);
+        } else if (position.tradeType == TradeType.LONG) {
+            // TODO
+            transferTokenSigned(position.quoteToken, owner, trader, balance);
+        } else {
+            revert("POSITION_IS_NOT_OPENED");
+        }
+        emit PositionClosed(positionId, owner, trader, balance);
     }
 
-    /// @dev Increases the amount of tokens that account `msg.sender` allowed to spend by account `spender`.
-    /// Method approve() should be called when _allowances[spender] == 0. To decrement allowance
-    /// it is better to use this function to avoid 2 calls (and waiting until the first transaction is mined).
-    /// @param spender The address from which the tokens can be spent.
-    /// @param value The amount of tokens to increase the allowance by.
-    /// @return True if approve was successful.
-    function increaseAllowance(address spender, uint256 value) external returns (bool) {
-        require(spender != address(0));
-        _increaseAllowance(msg.sender, spender, value);
-        return true;
+    // function test() internal {
+    //     TODO: Unpack
+    //     TODO: Business logic
+    //     if (from != address(0)) {
+    //         bool signatureValid = validateSignature(from, value, side, pnl, timeLock, signature);
+    //         require(signatureValid, "INVALID_ORDER_SIGNATURE");
+    //         if (to != address(0)) { 
+    //             changePositionOwner(from, to, value, side);
+    //         } else {
+    //             liquidatePosition(from, value, side);
+    //         }
+    //     } 
+    //     else {
+    //         require(to != address(0), "INVALID_OPEN_ADDRESS");
+    //         createPosition(from, to, value, side);
+    //     }
+    // }
+
+    // function validateSignature(
+    //     address from,
+    //     uint256 value,
+    //     TradeType tradeType,
+    //     int256 pnl,
+    //     uint256 timeLock,
+    //     bytes signature
+    // )
+    //     internal
+    //     pure
+    //     returns (bool)
+    // {
+    //     require(signature.length == 65, "INVALID_ORDER_SIGNATURE_LENGTH");
+    //     uint8 v = uint8(signature[0]);
+    //     bytes32 r = signature.readBytes32(1);
+    //     bytes32 s = signature.readBytes32(33);
+    //     bytes memory data = abi.encodePacked(from, value, tradeType, pnl, timeLock);
+    //     bytes32 dataHash = keccak256(data);
+    //     address recovered = ecrecover(dataHash, v, r, s);
+    //     return true/*signerAddress == recovered*/;
+    // }
+
+    function transferToken(ERC20Token token, address payer, address payee, uint256 value) internal {
+        require(
+            token.transferFrom(payer, payee, uint256(value)),
+            "UNABLE_TO_TRANSFER_ERC20_TOKEN"
+        );
     }
 
-    /// @dev Decreases the amount of tokens that account `msg.sender` allowed to spend by account `spender`.
-    /// Method approve() should be called when _allowances[spender] == 0. To decrement allowance
-    /// it is better to use this function to avoid 2 calls (and waiting until the first transaction is mined).
-    /// @param spender The address from which the tokens can be spent.
-    /// @param value The amount of tokens to decrease the allowance by.
-    /// @return True if approve was successful.
-    function decreaseAllowance(address spender, uint256 value) external returns (bool) {
-        require(spender != address(0));
-        _decreaseAllowance(msg.sender, spender, value);
-        return true;
+    function transferTokenSigned(ERC20Token token, address payer, address payee, int256 value) internal {
+        // TODO: ???
+        if (value > 0) {
+            transferToken(token, payer, payee, uint256(value));
+        } else if (value < 0) {
+            transferToken(token, payee, payer, uint256(-value));
+        }
     }
 
-    /// @dev Returns total amount of supplied tokens.
-    /// @return Total amount of supplied tokens.
-    function totalSupply() external view returns (uint256) {
-        return _totalSupply;
+    function parseAssetData(bytes assetData) internal pure returns (Position) {
+        // TODO: Check
+        require(assetData.length == 130, "INCORRECT_ASSET_DATA_LENGTH");
+        address baseToken = assetData.readAddress(0);
+        address quoteToken = assetData.readAddress(32);
+        address owner = assetData.readAddress(64);
+        address trader = assetData.readAddress(96);
+        TradeType tradeType = (assetData[128] > 0 ? TradeType.LONG : TradeType.SHORT);
+        int256 amount = int256(assetData.readBytes32(160));
+        uint256 margin = assetData.readUint256(192);
+        uint256 price = assetData.readUint256(224);
+        uint256 filled = assetData.readUint256(256);
+        uint256 timestamp = assetData.readUint256(288);
+        return Position(
+            ERC20Token(baseToken), ERC20Token(quoteToken),
+            owner, trader, tradeType, amount, margin, price, filled, timestamp
+        );
     }
 
-    /// @dev Returns the balance of account with address `owner`.
-    /// @param owner The address from which the balance will be retrieved.
-    /// @return Amount of tokens hold by account with address `owner`.
-    function balanceOf(address owner) external view returns (uint256) {
-        return _balances[owner];
+    function isPositionOpened(uint256 positionId) internal view returns (bool) {
+        return _positions[positionId].timestamp > 0 && _positions[positionId].margin > 0;
     }
 
-    /// @dev Returns the amount of tokens hold by account `owner` and approved to spend by account `spender`.
-    /// @param owner The address of the account owning tokens.
-    /// @param spender The address of the account able to transfer the tokens owning by account `owner`.
-    /// @return Amount of tokens allowed to spend.
-    function allowance(address owner, address spender) external view returns (uint256) {
-        return _allowances[owner][spender];
+    function isPositionFilled(uint256 positionId) internal view returns (bool) {
+        return _positions[positionId].timestamp > 0 && _positions[positionId].filled == 0;
+    }
+
+    function calculatePositionHash(Position memory position) internal pure returns (uint256) {
+        bytes memory data = abi.encodePacked(
+            position.baseToken,
+            position.quoteToken,
+            position.owner,
+            position.trader,
+            position.tradeType,
+            position.amount,
+            position.timestamp
+        );
+        bytes32 dataHash = keccak256(data);
+        return uint256(dataHash);
+    }
+
+    function calculatePNL(uint256 dexData) internal pure returns (int256) {
+        // TODO: ???
+        return int256(dexData);
     }
     
     // TODO:
     // function changePositionOwner
     // function liquidatePosition
-    // function createPosition 
-
-    // INTERNAL FUNCTIONS
-
-    function validateSignature(
-        address from,
-        uint256 value,
-        Side side,
-        int256 pnl,
-        uint256 timeLock,
-        bytes signature
-    )
-        internal
-        pure
-        returns (bool)
-    {
-        require(signature.length == 65, "INVALID_ORDER_SIGNATURE_LENGTH");
-        uint8 v = uint8(signature[0]);
-        bytes32 r = signature.readBytes32(1);
-        bytes32 s = signature.readBytes32(33);
-        bytes memory data = abi.encodePacked(from, value, side, pnl, timeLock);
-        bytes32 dataHash = keccak256(data);
-        address recovered = ecrecover(dataHash, v, r, s);
-        return true/*signerAddress == recovered*/;
-    }
-
-    /// @dev Transfers tokens from account with address `from` to account with address `to`.
-    /// @param from The address of the tokens sender.
-    /// @param to The address of the tokens recipient.
-    /// @param value The amount of tokens to be transferred.
-    function _transfer(address from, address to, uint256 value) internal {
-        require(value > 0 && value <= _balances[from]);
-        _balances[from] = safeSub(_balances[from], value);
-        _balances[to] = safeAdd(_balances[to], value);
-        emit Transfer(from, to, value);
-    }
-
-    /// @dev Increases the amount of tokens that account `owner` allowed to spend by account `spender`.
-    /// Method approve() should be called when _allowances[spender] == 0. To decrement allowance
-    /// it is better to use this function to avoid 2 calls (and waiting until the first transaction is mined).
-    /// @param owner The address which owns the tokens.
-    /// @param spender The address from which the tokens can be spent.
-    /// @param value The amount of tokens to increase the allowance by.
-    function _increaseAllowance(address owner, address spender, uint256 value) internal {
-        require(value > 0);
-        _allowances[owner][spender] = safeAdd(_allowances[owner][spender], value);
-        emit Approval(owner, spender, _allowances[owner][spender]);
-    }
-
-    /// @dev Decreases the amount of tokens that account `owner` allowed to spend by account `spender`.
-    /// Method approve() should be called when _allowances[spender] == 0. To decrement allowance
-    /// it is better to use this function to avoid 2 calls (and waiting until the first transaction is mined).
-    /// @param owner The address which owns the tokens.
-    /// @param spender The address from which the tokens can be spent.
-    /// @param value The amount of tokens to decrease the allowance by.
-    function _decreaseAllowance(address owner, address spender, uint256 value) internal {
-        require(value > 0 && value <= _allowances[owner][spender]);
-        _allowances[owner][spender] = safeSub(_allowances[owner][spender], value);
-        emit Approval(owner, spender, _allowances[owner][spender]);
-    }
-
-    /// @dev Internal function that mints specified amount of tokens and assigns it to account `receiver`.
-    /// This encapsulates the modification of balances such that the proper events are emitted.
-    /// @param receiver The address that will receive the minted tokens.
-    /// @param value The amount of tokens that will be minted.
-    function _mint(address receiver, uint256 value) internal {
-        require(receiver != address(0));
-        require(value > 0);
-        _balances[receiver] = safeAdd(_balances[receiver], value);
-        _totalSupply = safeAdd(_totalSupply, value);
-        emit Transfer(address(0), receiver, value);
-    }
-
-    /// @dev Internal function that burns specified amount of tokens of a given address.
-    /// @param burner The address from which tokens will be burnt.
-    /// @param value The amount of tokens that will be burnt.
-    function _burn(address burner, uint256 value) internal {
-        require(burner != address(0));
-        require(value > 0 && value <= _balances[burner]);
-        _balances[burner] = safeSub(_balances[burner], value);
-        _totalSupply = safeSub(_totalSupply, value);
-        emit Transfer(burner, address(0), value);
-    }
 
     // FIELDS
 
-    // Mapping of address => address => amount of open contracts
-    mapping (address => mapping (address => uint256)) internal _openContracts;
-
-    // Mapping of address => side of open short positions
-    mapping (address => Side) internal _sides;
+    mapping (uint256 => Position) internal _positions;
 
     uint256 internal _timeToLive;
 
-    uint256 internal _totalSupply;
-    mapping (address => uint256) internal _balances;
-    mapping (address => mapping (address => uint256)) internal _allowances;
-
-    // Amount of initially supplied tokens is constant and equals to 1,000,000,000
-    uint256 private constant INITIAL_SUPPLY = 10**27;
+    uint256 private constant INITIAL_LIFETIME = 14 days;
 }
