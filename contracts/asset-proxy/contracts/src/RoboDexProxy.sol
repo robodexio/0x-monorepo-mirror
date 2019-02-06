@@ -82,25 +82,28 @@ contract RoboDexProxy is MixinAuthorizable {
                 // | Area     | Offset | Length  | Contents                            |
                 // |----------|--------|---------|-------------------------------------|
                 // | Header   | 0      | 4       | function selector                   |
-                // | Params   |        | 4 * 32  | function parameters:                |
+                // | Params   |        | 1 * 32  | function parameters:                |
                 // |          | 4      | 12 + 20 |   1. token address                  |
-                // |          | 36     | 32      |   2. side                           |
-                // |          | 68     | 32      |   3. pnl                            |
-                // |          | 100    | 32      |   4. timeLock                       |
+                // |          |        |         | makerAssetData:                     |
+                // |          | 36     | 32      | makerAssetData Length               |
+                // |          | 68     | **      | makerAssetData Contents             |
+                // |          |        |         | takerAssetData:                     |
+                // |          | **     | 32      | takerAssetData Length               |
+                // |          | **     | **      | takerAssetData Contents             |
+                // |          |        |         | dexData:                            |
+                // |          | **     | 32      | dexData Length                      |
+                // |          | **     | **      | dexData Contents                    |
 
-                // We construct calldata for the `token.transferFrom` ABI.
+                // We construct calldata for the `token.peddle` ABI.
                 // The layout of this calldata is in the table below.
                 //
                 // | Area     | Offset | Length  | Contents                            |
                 // |----------|--------|---------|-------------------------------------|
                 // | Header   | 0      | 4       | function selector                   |
-                // | Params   |        | 36 * 32 | function parameters:                |
-                // |          | 4      | 12 + 20 |   1. from                           |
-                // |          | 36     | 12 + 20 |   2. to                             |
-                // |          | 68     | 32      |   3. amount                         |
-                // |          | 100    | 32      |   4. side                           |
-                // |          | 132    | 32      |   5. pnl                            |
-                // |          | 164    | 32      |   6. timeLock                       |
+                // | Params   |        |         | function parameters:                |
+                // |          | 4      | ** + 32 |   1. makerAssetData                 |
+                // |          | **     | ** + 32 |   2. takerAssetData                 |
+                // |          | **     | ** + 32 |   3. dexData                        |
 
                 /////// Read token transfer parameters from calldata ///////
                 // * The token address is stored in `assetData`.
@@ -114,31 +117,35 @@ contract RoboDexProxy is MixinAuthorizable {
                 //
                 // * The "token address" is offset 32+4=36 bytes into "assetData" (tables 1 & 2).
                 //   [tokenOffset = assetDataOffsetFromHeader + 36 = calldataload(4) + 4 + 36]
-                let token := calldataload(add(calldataload(4), 40))
+                let tokenOffset := add(calldataload(4), 40)
+                let token := calldataload(tokenOffset)
                 
                 /////// Setup Header Area ///////
-                // This area holds the 4-byte `transferFrom` selector.
-                // Any trailing data in transferFromSelector will be
+                // This area holds the 4-byte `peddle` selector.
+                // Any trailing data in peddleSelector will be
                 // overwritten in the next `mstore` call.
-                mstore(0, 0x39e0636100000000000000000000000000000000000000000000000000000000)
+                mstore(0, 0xf4970c9000000000000000000000000000000000000000000000000000000000)
                 
                 /////// Setup Params Area ///////
                 // We copy the fields `from`, `to` and `amount` in bulk
                 // from our own calldata to the new calldata.
-                calldatacopy(4, 36, 96)
-                // We also copy the fields `side`, `pnl` and `timeLock` in bulk
+                //calldatacopy(4, 36, 96)
+                // We copy the fields `makerAssetData`, `takerAssetData` and `dexData` in bulk
                 // from our own asset data to the new calldata.
-                calldatacopy(100, add(calldataload(4), 72), 96)
+                let tokenDataOffset := add(tokenOffset, 32)
+                let tokenDataLength := sub(calldatasize(), tokenDataOffset)
+                let callDataLength := add(tokenDataLength, 4)
+                calldatacopy(4, tokenDataOffset, tokenDataLength)
 
-                /////// Call `token.transferFrom` using the calldata ///////
+                /////// Call `token.peddle` using the calldata ///////
                 let success := call(
-                    gas,            // forward all gas
-                    token,          // call address of token contract
-                    0,              // don't send any ETH
-                    0,              // pointer to start of input
-                    196,            // length of input
-                    0,              // write output over input
-                    32              // output size should be 32 bytes
+                    gas,             // forward all gas
+                    token,           // call address of token contract
+                    0,               // don't send any ETH
+                    0,               // pointer to start of input
+                    callDataLength,  // length of input
+                    0,               // write output over input
+                    32               // output size should be 32 bytes
                 )
                 
                 /////// Check return data. ///////

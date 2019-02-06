@@ -17,12 +17,13 @@ contract RoboDexToken is ERC20Token {
     struct Position {
         ERC20Token baseToken;
         ERC20Token quoteToken;
-        address owner;
-        address trader;
+        address makerAddress;
+        address takerAddress;
         TradeType tradeType;
         int256 amount;
         uint256 margin;
-        uint256 price;
+        uint256 openPrice;
+        uint256 closePrice;
         uint256 filled;
         uint256 timestamp;
     }
@@ -31,20 +32,21 @@ contract RoboDexToken is ERC20Token {
 
     /// @dev Emits when position is opened.
     event PositionOpened(
-        uint256 positionId,
+        bytes32 positionId,
         address baseToken,
         address quoteToken,
-        address indexed owner,
-        address indexed trader,
+        address indexed makerAddress,
+        address indexed takerAddress,
         TradeType indexed tradeType,
         int256 amount,
         uint256 margin,
-        uint256 price
+        uint256 openPrice,
+        uint256 closePrice
     );
 
     /// @dev Emits when position is closed.
     event PositionClosed(
-        uint256 positionId,
+        bytes32 positionId,
         address indexed from,
         address indexed to,
         int256 amount
@@ -59,7 +61,7 @@ contract RoboDexToken is ERC20Token {
     function peddle(
         bytes makerAssetData,
         bytes takerAssetData,
-        uint256 dexData
+        bytes dexData
     ) external returns (bool) {
         Position memory makerPosition = parseAssetData(makerAssetData);
         Position memory takerPosition = parseAssetData(takerAssetData);
@@ -70,13 +72,13 @@ contract RoboDexToken is ERC20Token {
         // TODO: More checks
         if (makerOpening && takerOpening) {
             // Both maker and taker are opening positions
-            transferToken(makerPosition.baseToken, makerPosition.owner, address(this), makerPosition.margin);
-            transferToken(takerPosition.baseToken, takerPosition.owner, address(this), takerPosition.margin);
+            transferToken(makerPosition.baseToken, makerPosition.makerAddress, address(this), makerPosition.margin);
+            transferToken(takerPosition.baseToken, takerPosition.makerAddress, address(this), takerPosition.margin);
             openPosition(
                 makerPosition.baseToken,
                 makerPosition.quoteToken,
-                makerPosition.owner,
-                makerPosition.trader,
+                makerPosition.makerAddress,
+                makerPosition.takerAddress,
                 makerPosition.tradeType,
                 makerPosition.amount,
                 makerPosition.margin,
@@ -85,8 +87,8 @@ contract RoboDexToken is ERC20Token {
             openPosition(
                 takerPosition.baseToken,
                 takerPosition.quoteToken,
-                takerPosition.owner,
-                takerPosition.trader,
+                takerPosition.makerAddress,
+                takerPosition.takerAddress,
                 takerPosition.tradeType,
                 takerPosition.amount,
                 takerPosition.margin,
@@ -94,40 +96,40 @@ contract RoboDexToken is ERC20Token {
             );
         } else if (takerOpening) {
             // Taker is opening position
-            transferToken(takerPosition.baseToken, takerPosition.owner, address(this), takerPosition.margin);
+            transferToken(takerPosition.baseToken, takerPosition.makerAddress, address(this), takerPosition.margin);
             openPosition(
                 takerPosition.baseToken,
                 takerPosition.quoteToken,
-                takerPosition.owner,
-                takerPosition.trader,
+                takerPosition.makerAddress,
+                takerPosition.takerAddress,
                 takerPosition.tradeType,
                 takerPosition.amount,
                 takerPosition.margin,
                 takerPosition.price
             );
-            closePosition(makerPositionId, makerPosition.owner, takerPosition.owner, dexData);
+            closePosition(makerPositionId, makerPosition.makerAddress, takerPosition.makerAddress, dexData);
         } else if (makerOpening) {
             // Maker is opening position
-            transferToken(makerPosition.baseToken, makerPosition.owner, address(this), makerPosition.margin);
+            transferToken(makerPosition.baseToken, makerPosition.makerAddress, address(this), makerPosition.margin);
             openPosition(
                 makerPosition.baseToken,
                 makerPosition.quoteToken,
-                makerPosition.owner,
-                makerPosition.trader,
+                makerPosition.makerAddress,
+                makerPosition.takerAddress,
                 makerPosition.tradeType,
                 makerPosition.amount,
                 makerPosition.margin,
                 makerPosition.price
             );
-            closePosition(takerPositionId, takerPosition.owner, makerPosition.owner, dexData);
+            closePosition(takerPositionId, takerPosition.makerAddress, makerPosition.makerAddress, dexData);
         }
     }
 
-    function getPositionInfo(uint256 positionId) external view returns (
+    function getPositionInfo(bytes32 positionId) external view returns (
         address baseToken,
         address quoteToken,
-        address owner,
-        address trader,
+        address makerAddress,
+        address takerAddress,
         TradeType tradeType,
         int256 amount,
         uint256 margin,
@@ -138,8 +140,8 @@ contract RoboDexToken is ERC20Token {
         Position memory position = _positions[positionId];
         baseToken = position.baseToken;
         quoteToken = position.quoteToken;
-        owner = position.owner;
-        trader = position.trader;
+        makerAddress = position.makerAddress;
+        takerAddress = position.takerAddress;
         tradeType = position.tradeType;
         amount = position.amount;
         margin = position.margin;
@@ -151,19 +153,19 @@ contract RoboDexToken is ERC20Token {
     function openPosition(
         address baseToken,
         address quoteToken,
-        address owner,
-        address trader,
+        address makerAddress,
+        address takerAddress,
         TradeType tradeType,
         int256 amount,
         uint256 margin,
         uint256 price
-    ) internal returns (uint256 positionId) {
+    ) internal returns (bytes32 positionId) {
         require(
             baseToken != address(0) && quoteToken != address(0) && baseToken != quoteToken,
             "ERC20_TOKEN_ADDRESSES_INCORRECT"
         );
         require(
-            owner != address(0) && trader != address(0) && owner != trader,
+            makerAddress != address(0) && takerAddress != address(0) && makerAddress != takerAddress,
             "TRADER_ADDRESSES_INCORRECT"
         );
         require(
@@ -172,19 +174,19 @@ contract RoboDexToken is ERC20Token {
         );
         Position memory position = Position(
             ERC20Token(baseToken), ERC20Token(quoteToken),
-            owner, trader, tradeType, amount, margin, price, 0, now
+            makerAddress, takerAddress, tradeType, amount, margin, price, 0, now
         );
         positionId = calculatePositionHash(position);
         require(_positions[positionId].timestamp == 0, "POSITION_ALREADY_OPENED");
         _positions[positionId] = position;
-        emit PositionOpened(positionId, baseToken, quoteToken, owner, trader, tradeType, amount, margin, price);
+        emit PositionOpened(positionId, baseToken, quoteToken, makerAddress, takerAddress, tradeType, amount, margin, price);
     }
 
     function closePosition(
-        uint256 positionId,
-        address owner,
-        address trader,
-        uint256 dexData
+        bytes32 positionId,
+        address makerAddress,
+        address takerAddress,
+        bytes dexData
     ) internal {
         Position storage position = _positions[positionId];
         require(
@@ -192,63 +194,23 @@ contract RoboDexToken is ERC20Token {
             "POSITION_IS_NOT_OPENED"
         );
         require(
-            owner != address(0) && trader != address(0) && owner != trader,
+            makerAddress != address(0) && takerAddress != address(0) && makerAddress != takerAddress,
             "TRADER_ADDRESSES_INCORRECT"
         );
-        // TODO: Add more checks (owner, trader, dexData)
+        // TODO: Add more checks (makerAddress, takerAddress, dexData)
         int256 balance = calculatePNL(dexData);
         // TODO: Liquidate trades in the position
         if (position.tradeType == TradeType.SHORT) {
             // TODO
-            transferTokenSigned(position.baseToken, owner, trader, balance);
+            transferTokenSigned(position.baseToken, makerAddress, takerAddress, balance);
         } else if (position.tradeType == TradeType.LONG) {
             // TODO
-            transferTokenSigned(position.quoteToken, owner, trader, balance);
+            transferTokenSigned(position.quoteToken, makerAddress, takerAddress, balance);
         } else {
             revert("POSITION_IS_NOT_OPENED");
         }
-        emit PositionClosed(positionId, owner, trader, balance);
+        emit PositionClosed(positionId, makerAddress, takerAddress, balance);
     }
-
-    // function test() internal {
-    //     TODO: Unpack
-    //     TODO: Business logic
-    //     if (from != address(0)) {
-    //         bool signatureValid = validateSignature(from, value, side, pnl, timeLock, signature);
-    //         require(signatureValid, "INVALID_ORDER_SIGNATURE");
-    //         if (to != address(0)) { 
-    //             changePositionOwner(from, to, value, side);
-    //         } else {
-    //             liquidatePosition(from, value, side);
-    //         }
-    //     } 
-    //     else {
-    //         require(to != address(0), "INVALID_OPEN_ADDRESS");
-    //         createPosition(from, to, value, side);
-    //     }
-    // }
-
-    // function validateSignature(
-    //     address from,
-    //     uint256 value,
-    //     TradeType tradeType,
-    //     int256 pnl,
-    //     uint256 timeLock,
-    //     bytes signature
-    // )
-    //     internal
-    //     pure
-    //     returns (bool)
-    // {
-    //     require(signature.length == 65, "INVALID_ORDER_SIGNATURE_LENGTH");
-    //     uint8 v = uint8(signature[0]);
-    //     bytes32 r = signature.readBytes32(1);
-    //     bytes32 s = signature.readBytes32(33);
-    //     bytes memory data = abi.encodePacked(from, value, tradeType, pnl, timeLock);
-    //     bytes32 dataHash = keccak256(data);
-    //     address recovered = ecrecover(dataHash, v, r, s);
-    //     return true/*signerAddress == recovered*/;
-    // }
 
     function transferToken(ERC20Token token, address payer, address payee, uint256 value) internal {
         require(
@@ -271,8 +233,8 @@ contract RoboDexToken is ERC20Token {
         require(assetData.length == 130, "INCORRECT_ASSET_DATA_LENGTH");
         address baseToken = assetData.readAddress(0);
         address quoteToken = assetData.readAddress(32);
-        address owner = assetData.readAddress(64);
-        address trader = assetData.readAddress(96);
+        address makerAddress = assetData.readAddress(64);
+        address takerAddress = assetData.readAddress(96);
         TradeType tradeType = (assetData[128] > 0 ? TradeType.LONG : TradeType.SHORT);
         int256 amount = int256(assetData.readBytes32(160));
         uint256 margin = assetData.readUint256(192);
@@ -281,46 +243,47 @@ contract RoboDexToken is ERC20Token {
         uint256 timestamp = assetData.readUint256(288);
         return Position(
             ERC20Token(baseToken), ERC20Token(quoteToken),
-            owner, trader, tradeType, amount, margin, price, filled, timestamp
+            makerAddress, takerAddress, tradeType, amount, margin, price, filled, timestamp
         );
     }
 
-    function isPositionOpened(uint256 positionId) internal view returns (bool) {
+    function isPositionOpened(bytes32 positionId) internal view returns (bool) {
         return _positions[positionId].timestamp > 0 && _positions[positionId].margin > 0;
     }
 
-    function isPositionFilled(uint256 positionId) internal view returns (bool) {
+    function isPositionFilled(bytes32 positionId) internal view returns (bool) {
         return _positions[positionId].timestamp > 0 && _positions[positionId].filled == 0;
     }
 
-    function calculatePositionHash(Position memory position) internal pure returns (uint256) {
+    function calculatePositionHash(Position memory position) internal pure returns (bytes32) {
         bytes memory data = abi.encodePacked(
             position.baseToken,
             position.quoteToken,
-            position.owner,
-            position.trader,
+            position.makerAddress,
+            position.takerAddress,
             position.tradeType,
             position.amount,
             position.timestamp
         );
-        bytes32 dataHash = keccak256(data);
-        return uint256(dataHash);
+        return keccak256(data);
     }
 
-    function calculatePNL(uint256 dexData) internal pure returns (int256) {
-        // TODO: ???
-        return int256(dexData);
+    function calculatePNL(bytes dexData) internal pure returns (int256) {
+        // TODO: Calculate PNL carefully
+        return dexData.length < 32 ? int256(0) : int256(dexData.readBytes32(0));
     }
-    
-    // TODO:
-    // function changePositionOwner
-    // function liquidatePosition
 
     // FIELDS
 
-    mapping (uint256 => Position) internal _positions;
+    // Storage of open positions
+    mapping (bytes32 => Position) internal _positions;
 
+    // Storage of all known position IDs by account
+    mapping (address => mapping (uint64 => bytes32)) internal _positionHashes;
+    mapping (address => uint64) internal _positionHashesCounts;
+
+    // TTL which is not used yet
     uint256 internal _timeToLive;
 
-    uint256 private constant INITIAL_LIFETIME = 14 days;
+    uint256 private constant INITIAL_LIFETIME = 21 days;
 }
