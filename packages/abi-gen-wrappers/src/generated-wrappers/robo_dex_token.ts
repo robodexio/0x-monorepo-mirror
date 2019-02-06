@@ -11,23 +11,36 @@ import * as _ from 'lodash';
 // tslint:enable:no-unused-variable
 
 export type RoboDexTokenEventArgs =
-    | RoboDexTokenVerify0xEventArgs
+    | RoboDexTokenPositionOpenedEventArgs
+    | RoboDexTokenPositionClosedEventArgs
     | RoboDexTokenTransferEventArgs
     | RoboDexTokenApprovalEventArgs;
 
 export enum RoboDexTokenEvents {
-    Verify0x = 'Verify0x',
+    PositionOpened = 'PositionOpened',
+    PositionClosed = 'PositionClosed',
     Transfer = 'Transfer',
     Approval = 'Approval',
 }
 
-export interface RoboDexTokenVerify0xEventArgs extends DecodedLogArgs {
+export interface RoboDexTokenPositionOpenedEventArgs extends DecodedLogArgs {
+    positionId: string;
+    baseToken: string;
+    quoteToken: string;
+    makerAddress: string;
+    takerAddress: string;
+    tradeType: number;
+    amount: BigNumber;
+    margin: BigNumber;
+    openPrice: BigNumber;
+    closePrice: BigNumber;
+}
+
+export interface RoboDexTokenPositionClosedEventArgs extends DecodedLogArgs {
+    positionId: string;
     from: string;
     to: string;
-    side: number;
-    value: BigNumber;
-    pnl: BigNumber;
-    timeLock: BigNumber;
+    amount: BigNumber;
 }
 
 export interface RoboDexTokenTransferEventArgs extends DecodedLogArgs {
@@ -158,6 +171,100 @@ export class RoboDexTokenContract extends BaseContract {
             return result;
         },
     };
+    public transferFrom = {
+        async sendTransactionAsync(
+            from: string,
+            to: string,
+            value: BigNumber,
+            txData: Partial<TxData> = {},
+        ): Promise<string> {
+            const self = this as any as RoboDexTokenContract;
+            const encodedData = self._strictEncodeArguments('transferFrom(address,address,uint256)', [from,
+    to,
+    value
+    ]);
+            const txDataWithDefaults = await BaseContract._applyDefaultsToTxDataAsync(
+                {
+                    to: self.address,
+                    ...txData,
+                    data: encodedData,
+                },
+                self._web3Wrapper.getContractDefaults(),
+                self.transferFrom.estimateGasAsync.bind(
+                    self,
+                    from,
+                    to,
+                    value
+                ),
+            );
+            const txHash = await self._web3Wrapper.sendTransactionAsync(txDataWithDefaults);
+            return txHash;
+        },
+        async estimateGasAsync(
+            from: string,
+            to: string,
+            value: BigNumber,
+            txData: Partial<TxData> = {},
+        ): Promise<number> {
+            const self = this as any as RoboDexTokenContract;
+            const encodedData = self._strictEncodeArguments('transferFrom(address,address,uint256)', [from,
+    to,
+    value
+    ]);
+            const txDataWithDefaults = await BaseContract._applyDefaultsToTxDataAsync(
+                {
+                    to: self.address,
+                    ...txData,
+                    data: encodedData,
+                },
+                self._web3Wrapper.getContractDefaults(),
+            );
+            const gas = await self._web3Wrapper.estimateGasAsync(txDataWithDefaults);
+            return gas;
+        },
+        getABIEncodedTransactionData(
+            from: string,
+            to: string,
+            value: BigNumber,
+        ): string {
+            const self = this as any as RoboDexTokenContract;
+            const abiEncodedTransactionData = self._strictEncodeArguments('transferFrom(address,address,uint256)', [from,
+    to,
+    value
+    ]);
+            return abiEncodedTransactionData;
+        },
+        async callAsync(
+            from: string,
+            to: string,
+            value: BigNumber,
+            callData: Partial<CallData> = {},
+            defaultBlock?: BlockParam,
+        ): Promise<boolean
+        > {
+            const self = this as any as RoboDexTokenContract;
+            const encodedData = self._strictEncodeArguments('transferFrom(address,address,uint256)', [from,
+        to,
+        value
+        ]);
+            const callDataWithDefaults = await BaseContract._applyDefaultsToTxDataAsync(
+                {
+                    to: self.address,
+                    ...callData,
+                    data: encodedData,
+                },
+                self._web3Wrapper.getContractDefaults(),
+            );
+            const rawCallResult = await self._web3Wrapper.callAsync(callDataWithDefaults, defaultBlock);
+            BaseContract._throwIfRevertWithReasonCallResult(rawCallResult);
+            const abiEncoder = self._lookupAbiEncoder('transferFrom(address,address,uint256)');
+            // tslint:disable boolean-naming
+            const result = abiEncoder.strictDecodeReturnValue<boolean
+        >(rawCallResult);
+            // tslint:enable boolean-naming
+            return result;
+        },
+    };
     public increaseAllowance = {
         async sendTransactionAsync(
             spender: string,
@@ -243,108 +350,15 @@ export class RoboDexTokenContract extends BaseContract {
             return result;
         },
     };
-    public transferFrom = {
-        async sendTransactionAsync(
-            from: string,
-            to: string,
-            value: BigNumber,
-            side: number|BigNumber,
-            pnl: BigNumber,
-            timeLock: BigNumber,
-            txData: Partial<TxData> = {},
-        ): Promise<string> {
-            const self = this as any as RoboDexTokenContract;
-            const encodedData = self._strictEncodeArguments('transferFrom(address,address,uint256,uint8,int256,uint256)', [from,
-    to,
-    value,
-    side,
-    pnl,
-    timeLock
-    ]);
-            const txDataWithDefaults = await BaseContract._applyDefaultsToTxDataAsync(
-                {
-                    to: self.address,
-                    ...txData,
-                    data: encodedData,
-                },
-                self._web3Wrapper.getContractDefaults(),
-                self.transferFrom.estimateGasAsync.bind(
-                    self,
-                    from,
-                    to,
-                    value,
-                    side,
-                    pnl,
-                    timeLock
-                ),
-            );
-            const txHash = await self._web3Wrapper.sendTransactionAsync(txDataWithDefaults);
-            return txHash;
-        },
-        async estimateGasAsync(
-            from: string,
-            to: string,
-            value: BigNumber,
-            side: number|BigNumber,
-            pnl: BigNumber,
-            timeLock: BigNumber,
-            txData: Partial<TxData> = {},
-        ): Promise<number> {
-            const self = this as any as RoboDexTokenContract;
-            const encodedData = self._strictEncodeArguments('transferFrom(address,address,uint256,uint8,int256,uint256)', [from,
-    to,
-    value,
-    side,
-    pnl,
-    timeLock
-    ]);
-            const txDataWithDefaults = await BaseContract._applyDefaultsToTxDataAsync(
-                {
-                    to: self.address,
-                    ...txData,
-                    data: encodedData,
-                },
-                self._web3Wrapper.getContractDefaults(),
-            );
-            const gas = await self._web3Wrapper.estimateGasAsync(txDataWithDefaults);
-            return gas;
-        },
-        getABIEncodedTransactionData(
-            from: string,
-            to: string,
-            value: BigNumber,
-            side: number|BigNumber,
-            pnl: BigNumber,
-            timeLock: BigNumber,
-        ): string {
-            const self = this as any as RoboDexTokenContract;
-            const abiEncodedTransactionData = self._strictEncodeArguments('transferFrom(address,address,uint256,uint8,int256,uint256)', [from,
-    to,
-    value,
-    side,
-    pnl,
-    timeLock
-    ]);
-            return abiEncodedTransactionData;
-        },
+    public getPositionInfo = {
         async callAsync(
-            from: string,
-            to: string,
-            value: BigNumber,
-            side: number|BigNumber,
-            pnl: BigNumber,
-            timeLock: BigNumber,
+            positionId: string,
             callData: Partial<CallData> = {},
             defaultBlock?: BlockParam,
-        ): Promise<boolean
+        ): Promise<[string, string, string, string, number, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber]
         > {
             const self = this as any as RoboDexTokenContract;
-            const encodedData = self._strictEncodeArguments('transferFrom(address,address,uint256,uint8,int256,uint256)', [from,
-        to,
-        value,
-        side,
-        pnl,
-        timeLock
+            const encodedData = self._strictEncodeArguments('getPositionInfo(bytes32)', [positionId
         ]);
             const callDataWithDefaults = await BaseContract._applyDefaultsToTxDataAsync(
                 {
@@ -356,9 +370,9 @@ export class RoboDexTokenContract extends BaseContract {
             );
             const rawCallResult = await self._web3Wrapper.callAsync(callDataWithDefaults, defaultBlock);
             BaseContract._throwIfRevertWithReasonCallResult(rawCallResult);
-            const abiEncoder = self._lookupAbiEncoder('transferFrom(address,address,uint256,uint8,int256,uint256)');
+            const abiEncoder = self._lookupAbiEncoder('getPositionInfo(bytes32)');
             // tslint:disable boolean-naming
-            const result = abiEncoder.strictDecodeReturnValue<boolean
+            const result = abiEncoder.strictDecodeReturnValue<[string, string, string, string, number, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber]
         >(rawCallResult);
             // tslint:enable boolean-naming
             return result;
@@ -587,6 +601,100 @@ export class RoboDexTokenContract extends BaseContract {
             const abiEncoder = self._lookupAbiEncoder('allowance(address,address)');
             // tslint:disable boolean-naming
             const result = abiEncoder.strictDecodeReturnValue<BigNumber
+        >(rawCallResult);
+            // tslint:enable boolean-naming
+            return result;
+        },
+    };
+    public peddle = {
+        async sendTransactionAsync(
+            makerAssetData: string,
+            takerAssetData: string,
+            dexData: string,
+            txData: Partial<TxData> = {},
+        ): Promise<string> {
+            const self = this as any as RoboDexTokenContract;
+            const encodedData = self._strictEncodeArguments('peddle(bytes,bytes,bytes)', [makerAssetData,
+    takerAssetData,
+    dexData
+    ]);
+            const txDataWithDefaults = await BaseContract._applyDefaultsToTxDataAsync(
+                {
+                    to: self.address,
+                    ...txData,
+                    data: encodedData,
+                },
+                self._web3Wrapper.getContractDefaults(),
+                self.peddle.estimateGasAsync.bind(
+                    self,
+                    makerAssetData,
+                    takerAssetData,
+                    dexData
+                ),
+            );
+            const txHash = await self._web3Wrapper.sendTransactionAsync(txDataWithDefaults);
+            return txHash;
+        },
+        async estimateGasAsync(
+            makerAssetData: string,
+            takerAssetData: string,
+            dexData: string,
+            txData: Partial<TxData> = {},
+        ): Promise<number> {
+            const self = this as any as RoboDexTokenContract;
+            const encodedData = self._strictEncodeArguments('peddle(bytes,bytes,bytes)', [makerAssetData,
+    takerAssetData,
+    dexData
+    ]);
+            const txDataWithDefaults = await BaseContract._applyDefaultsToTxDataAsync(
+                {
+                    to: self.address,
+                    ...txData,
+                    data: encodedData,
+                },
+                self._web3Wrapper.getContractDefaults(),
+            );
+            const gas = await self._web3Wrapper.estimateGasAsync(txDataWithDefaults);
+            return gas;
+        },
+        getABIEncodedTransactionData(
+            makerAssetData: string,
+            takerAssetData: string,
+            dexData: string,
+        ): string {
+            const self = this as any as RoboDexTokenContract;
+            const abiEncodedTransactionData = self._strictEncodeArguments('peddle(bytes,bytes,bytes)', [makerAssetData,
+    takerAssetData,
+    dexData
+    ]);
+            return abiEncodedTransactionData;
+        },
+        async callAsync(
+            makerAssetData: string,
+            takerAssetData: string,
+            dexData: string,
+            callData: Partial<CallData> = {},
+            defaultBlock?: BlockParam,
+        ): Promise<boolean
+        > {
+            const self = this as any as RoboDexTokenContract;
+            const encodedData = self._strictEncodeArguments('peddle(bytes,bytes,bytes)', [makerAssetData,
+        takerAssetData,
+        dexData
+        ]);
+            const callDataWithDefaults = await BaseContract._applyDefaultsToTxDataAsync(
+                {
+                    to: self.address,
+                    ...callData,
+                    data: encodedData,
+                },
+                self._web3Wrapper.getContractDefaults(),
+            );
+            const rawCallResult = await self._web3Wrapper.callAsync(callDataWithDefaults, defaultBlock);
+            BaseContract._throwIfRevertWithReasonCallResult(rawCallResult);
+            const abiEncoder = self._lookupAbiEncoder('peddle(bytes,bytes,bytes)');
+            // tslint:disable boolean-naming
+            const result = abiEncoder.strictDecodeReturnValue<boolean
         >(rawCallResult);
             // tslint:enable boolean-naming
             return result;

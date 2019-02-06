@@ -55,7 +55,7 @@ export async function runMigrationsAsync(provider: Provider, txDefaults: TxData)
     const rdxToken = await wrappers.RDXTokenContract.deployFrom0xArtifactAsync(
         artifacts.RDXToken,
         provider,
-        {...txDefaults, ...{ gas: 1000000 }},
+        {...txDefaults, ...{ gas: 5000000 }},
     );
 
     // Exchange
