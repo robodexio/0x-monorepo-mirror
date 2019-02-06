@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
 
-contract IBitDexToken {
+contract IRoboDexToken {
 
     enum Side {
         SHORT, // Also means 'SELL'

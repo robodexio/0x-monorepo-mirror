@@ -1,10 +1,10 @@
 [
     {
-        "name": "BDTToken",
+        "name": "RDXToken",
         "version": "1.0.0",
         "changes": [
             {
-                "note": "protocol v1 deploy",
+                "note": "protocol v2 deploy",
                 "networks": {
                     "1": "0x0000000000000000000000000000000000000000",
                     "3": "0x0000000000000000000000000000000000000000",

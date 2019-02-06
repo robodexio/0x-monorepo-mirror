@@ -1,7 +1,4 @@
 import * as AssetProxyOwner from '../artifacts/AssetProxyOwner.json';
-import * as BDTToken from '../artifacts/BDTToken.json';
-import * as BitDexProxy from '../artifacts/BitDexProxy.json';
-import * as BitDexToken from '../artifacts/BitDexToken.json';
 import * as DummyERC20Token from '../artifacts/DummyERC20Token.json';
 import * as DummyERC721Token from '../artifacts/DummyERC721Token.json';
 import * as DutchAuction from '../artifacts/DutchAuction.json';
@@ -15,14 +12,14 @@ import * as IValidator from '../artifacts/IValidator.json';
 import * as IWallet from '../artifacts/IWallet.json';
 import * as MultiAssetProxy from '../artifacts/MultiAssetProxy.json';
 import * as OrderValidator from '../artifacts/OrderValidator.json';
+import * as RDXToken from '../artifacts/RDXToken.json';
+import * as RoboDexProxy from '../artifacts/RoboDexProxy.json';
+import * as RoboDexToken from '../artifacts/RoboDexToken.json';
 import * as WETH9 from '../artifacts/WETH9.json';
 import * as ZRXToken from '../artifacts/ZRXToken.json';
 
 export {
     AssetProxyOwner,
-    BDTToken,
-    BitDexProxy,
-    BitDexToken,
     DutchAuction,
     DummyERC20Token,
     DummyERC721Token,
@@ -36,6 +33,9 @@ export {
     IWallet,
     MultiAssetProxy,
     OrderValidator,
+    RDXToken,
+    RoboDexProxy,
+    RoboDexToken,
     WETH9,
     ZRXToken,
 };

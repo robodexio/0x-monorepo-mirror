@@ -8,9 +8,6 @@
     "include": ["./src/**/*"],
     "files": [
         "./artifacts/AssetProxyOwner.json",
-        "./artifacts/BDTToken.json",
-        "./artifacts/BitDexProxy.json",
-        "./artifacts/BitDexToken.json",
         "./artifacts/DutchAuction.json",
         "./artifacts/DummyERC20Token.json",
         "./artifacts/DummyERC721Token.json",
@@ -24,6 +21,9 @@
         "./artifacts/IWallet.json",
         "./artifacts/MultiAssetProxy.json",
         "./artifacts/OrderValidator.json",
+        "./artifacts/RoboDexProxy.json",
+        "./artifacts/RoboDexToken.json",
+        "./artifacts/RDXToken.json",
         "./artifacts/WETH9.json",
         "./artifacts/ZRXToken.json"
     ]

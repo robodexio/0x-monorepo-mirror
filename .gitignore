@@ -88,9 +88,9 @@ contracts/asset-proxy/generated-artifacts/
 contracts/multisig/generated-artifacts/
 contracts/utils/generated-artifacts/
 contracts/exchange-libs/generated-artifacts/
-contracts/bitdex/generated-artifacts/
 contracts/erc20/generated-artifacts/
 contracts/erc721/generated-artifacts/
+contracts/robodex/generated-artifacts/
 contracts/extensions/generated-artifacts/
 contracts/exchange-forwarder/generated-artifacts/
 packages/sol-tracing-utils/test/fixtures/artifacts/
@@ -103,9 +103,9 @@ contracts/asset-proxy/generated-wrappers/
 contracts/multisig/generated-wrappers/
 contracts/utils/generated-wrappers/
 contracts/exchange-libs/generated-wrappers/
-contracts/bitdex/generated-wrappers/
 contracts/erc20/generated-wrappers/
 contracts/erc721/generated-wrappers/
+contracts/robodex/generated-wrappers/
 contracts/extensions/generated-wrappers/
 contracts/exchange-forwarder/generated-wrappers/
 packages/metacoin/src/contract_wrappers
@@ -125,3 +125,5 @@ python-packages/*/dist
 __pycache__
 python-packages/*/src/*.egg-info
 python-packages/*/.coverage
+
+flatten*

@@ -97,7 +97,7 @@ export const utils = {
         let fileName = toSnakeCase(name);
         // HACK: Snake case doesn't make a lot of sense for abbreviated names but we can't reliably detect abbreviations
         // so we special-case the abbreviations we use.
-        fileName = fileName.replace('z_r_x', 'zrx').replace('e_r_c', 'erc').replace('b_d_t', 'bdt');
+        fileName = fileName.replace('z_r_x', 'zrx').replace('e_r_c', 'erc').replace('r_d_x', 'rdx');
         return fileName;
     },
     writeOutputFile(filePath: string, renderedTsCode: string): void {

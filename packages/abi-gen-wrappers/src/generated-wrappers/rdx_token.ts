@@ -10,18 +10,18 @@ import * as ethers from 'ethers';
 import * as _ from 'lodash';
 // tslint:enable:no-unused-variable
 
-export type BDTTokenEventArgs =
-    | BDTTokenVerify0xEventArgs
-    | BDTTokenTransferEventArgs
-    | BDTTokenApprovalEventArgs;
+export type RDXTokenEventArgs =
+    | RDXTokenVerify0xEventArgs
+    | RDXTokenTransferEventArgs
+    | RDXTokenApprovalEventArgs;
 
-export enum BDTTokenEvents {
+export enum RDXTokenEvents {
     Verify0x = 'Verify0x',
     Transfer = 'Transfer',
     Approval = 'Approval',
 }
 
-export interface BDTTokenVerify0xEventArgs extends DecodedLogArgs {
+export interface RDXTokenVerify0xEventArgs extends DecodedLogArgs {
     from: string;
     to: string;
     side: number;
@@ -30,13 +30,13 @@ export interface BDTTokenVerify0xEventArgs extends DecodedLogArgs {
     timeLock: BigNumber;
 }
 
-export interface BDTTokenTransferEventArgs extends DecodedLogArgs {
+export interface RDXTokenTransferEventArgs extends DecodedLogArgs {
     from: string;
     to: string;
     value: BigNumber;
 }
 
-export interface BDTTokenApprovalEventArgs extends DecodedLogArgs {
+export interface RDXTokenApprovalEventArgs extends DecodedLogArgs {
     owner: string;
     spender: string;
     value: BigNumber;
@@ -46,14 +46,14 @@ export interface BDTTokenApprovalEventArgs extends DecodedLogArgs {
 /* istanbul ignore next */
 // tslint:disable:no-parameter-reassignment
 // tslint:disable-next-line:class-name
-export class BDTTokenContract extends BaseContract {
+export class RDXTokenContract extends BaseContract {
     public name = {
         async callAsync(
             callData: Partial<CallData> = {},
             defaultBlock?: BlockParam,
         ): Promise<string
         > {
-            const self = this as any as BDTTokenContract;
+            const self = this as any as RDXTokenContract;
             const encodedData = self._strictEncodeArguments('name()', []);
             const callDataWithDefaults = await BaseContract._applyDefaultsToTxDataAsync(
                 {
@@ -79,7 +79,7 @@ export class BDTTokenContract extends BaseContract {
             value: BigNumber,
             txData: Partial<TxData> = {},
         ): Promise<string> {
-            const self = this as any as BDTTokenContract;
+            const self = this as any as RDXTokenContract;
             const encodedData = self._strictEncodeArguments('approve(address,uint256)', [spender,
     value
     ]);
@@ -104,7 +104,7 @@ export class BDTTokenContract extends BaseContract {
             value: BigNumber,
             txData: Partial<TxData> = {},
         ): Promise<number> {
-            const self = this as any as BDTTokenContract;
+            const self = this as any as RDXTokenContract;
             const encodedData = self._strictEncodeArguments('approve(address,uint256)', [spender,
     value
     ]);
@@ -123,7 +123,7 @@ export class BDTTokenContract extends BaseContract {
             spender: string,
             value: BigNumber,
         ): string {
-            const self = this as any as BDTTokenContract;
+            const self = this as any as RDXTokenContract;
             const abiEncodedTransactionData = self._strictEncodeArguments('approve(address,uint256)', [spender,
     value
     ]);
@@ -136,7 +136,7 @@ export class BDTTokenContract extends BaseContract {
             defaultBlock?: BlockParam,
         ): Promise<boolean
         > {
-            const self = this as any as BDTTokenContract;
+            const self = this as any as RDXTokenContract;
             const encodedData = self._strictEncodeArguments('approve(address,uint256)', [spender,
         value
         ]);
@@ -164,7 +164,7 @@ export class BDTTokenContract extends BaseContract {
             defaultBlock?: BlockParam,
         ): Promise<BigNumber
         > {
-            const self = this as any as BDTTokenContract;
+            const self = this as any as RDXTokenContract;
             const encodedData = self._strictEncodeArguments('totalSupply()', []);
             const callDataWithDefaults = await BaseContract._applyDefaultsToTxDataAsync(
                 {
@@ -190,7 +190,7 @@ export class BDTTokenContract extends BaseContract {
             defaultBlock?: BlockParam,
         ): Promise<number
         > {
-            const self = this as any as BDTTokenContract;
+            const self = this as any as RDXTokenContract;
             const encodedData = self._strictEncodeArguments('decimals()', []);
             const callDataWithDefaults = await BaseContract._applyDefaultsToTxDataAsync(
                 {
@@ -216,7 +216,7 @@ export class BDTTokenContract extends BaseContract {
             value: BigNumber,
             txData: Partial<TxData> = {},
         ): Promise<string> {
-            const self = this as any as BDTTokenContract;
+            const self = this as any as RDXTokenContract;
             const encodedData = self._strictEncodeArguments('increaseAllowance(address,uint256)', [spender,
     value
     ]);
@@ -241,7 +241,7 @@ export class BDTTokenContract extends BaseContract {
             value: BigNumber,
             txData: Partial<TxData> = {},
         ): Promise<number> {
-            const self = this as any as BDTTokenContract;
+            const self = this as any as RDXTokenContract;
             const encodedData = self._strictEncodeArguments('increaseAllowance(address,uint256)', [spender,
     value
     ]);
@@ -260,7 +260,7 @@ export class BDTTokenContract extends BaseContract {
             spender: string,
             value: BigNumber,
         ): string {
-            const self = this as any as BDTTokenContract;
+            const self = this as any as RDXTokenContract;
             const abiEncodedTransactionData = self._strictEncodeArguments('increaseAllowance(address,uint256)', [spender,
     value
     ]);
@@ -273,7 +273,7 @@ export class BDTTokenContract extends BaseContract {
             defaultBlock?: BlockParam,
         ): Promise<boolean
         > {
-            const self = this as any as BDTTokenContract;
+            const self = this as any as RDXTokenContract;
             const encodedData = self._strictEncodeArguments('increaseAllowance(address,uint256)', [spender,
         value
         ]);
@@ -305,7 +305,7 @@ export class BDTTokenContract extends BaseContract {
             timeLock: BigNumber,
             txData: Partial<TxData> = {},
         ): Promise<string> {
-            const self = this as any as BDTTokenContract;
+            const self = this as any as RDXTokenContract;
             const encodedData = self._strictEncodeArguments('transferFrom(address,address,uint256,uint8,int256,uint256)', [from,
     to,
     value,
@@ -342,7 +342,7 @@ export class BDTTokenContract extends BaseContract {
             timeLock: BigNumber,
             txData: Partial<TxData> = {},
         ): Promise<number> {
-            const self = this as any as BDTTokenContract;
+            const self = this as any as RDXTokenContract;
             const encodedData = self._strictEncodeArguments('transferFrom(address,address,uint256,uint8,int256,uint256)', [from,
     to,
     value,
@@ -369,7 +369,7 @@ export class BDTTokenContract extends BaseContract {
             pnl: BigNumber,
             timeLock: BigNumber,
         ): string {
-            const self = this as any as BDTTokenContract;
+            const self = this as any as RDXTokenContract;
             const abiEncodedTransactionData = self._strictEncodeArguments('transferFrom(address,address,uint256,uint8,int256,uint256)', [from,
     to,
     value,
@@ -390,7 +390,7 @@ export class BDTTokenContract extends BaseContract {
             defaultBlock?: BlockParam,
         ): Promise<boolean
         > {
-            const self = this as any as BDTTokenContract;
+            const self = this as any as RDXTokenContract;
             const encodedData = self._strictEncodeArguments('transferFrom(address,address,uint256,uint8,int256,uint256)', [from,
         to,
         value,
@@ -423,7 +423,7 @@ export class BDTTokenContract extends BaseContract {
             defaultBlock?: BlockParam,
         ): Promise<BigNumber
         > {
-            const self = this as any as BDTTokenContract;
+            const self = this as any as RDXTokenContract;
             const encodedData = self._strictEncodeArguments('balanceOf(address)', [owner
         ]);
             const callDataWithDefaults = await BaseContract._applyDefaultsToTxDataAsync(
@@ -450,7 +450,7 @@ export class BDTTokenContract extends BaseContract {
             defaultBlock?: BlockParam,
         ): Promise<string
         > {
-            const self = this as any as BDTTokenContract;
+            const self = this as any as RDXTokenContract;
             const encodedData = self._strictEncodeArguments('symbol()', []);
             const callDataWithDefaults = await BaseContract._applyDefaultsToTxDataAsync(
                 {
@@ -476,7 +476,7 @@ export class BDTTokenContract extends BaseContract {
             value: BigNumber,
             txData: Partial<TxData> = {},
         ): Promise<string> {
-            const self = this as any as BDTTokenContract;
+            const self = this as any as RDXTokenContract;
             const encodedData = self._strictEncodeArguments('decreaseAllowance(address,uint256)', [spender,
     value
     ]);
@@ -501,7 +501,7 @@ export class BDTTokenContract extends BaseContract {
             value: BigNumber,
             txData: Partial<TxData> = {},
         ): Promise<number> {
-            const self = this as any as BDTTokenContract;
+            const self = this as any as RDXTokenContract;
             const encodedData = self._strictEncodeArguments('decreaseAllowance(address,uint256)', [spender,
     value
     ]);
@@ -520,7 +520,7 @@ export class BDTTokenContract extends BaseContract {
             spender: string,
             value: BigNumber,
         ): string {
-            const self = this as any as BDTTokenContract;
+            const self = this as any as RDXTokenContract;
             const abiEncodedTransactionData = self._strictEncodeArguments('decreaseAllowance(address,uint256)', [spender,
     value
     ]);
@@ -533,7 +533,7 @@ export class BDTTokenContract extends BaseContract {
             defaultBlock?: BlockParam,
         ): Promise<boolean
         > {
-            const self = this as any as BDTTokenContract;
+            const self = this as any as RDXTokenContract;
             const encodedData = self._strictEncodeArguments('decreaseAllowance(address,uint256)', [spender,
         value
         ]);
@@ -561,7 +561,7 @@ export class BDTTokenContract extends BaseContract {
             value: BigNumber,
             txData: Partial<TxData> = {},
         ): Promise<string> {
-            const self = this as any as BDTTokenContract;
+            const self = this as any as RDXTokenContract;
             const encodedData = self._strictEncodeArguments('transfer(address,uint256)', [to,
     value
     ]);
@@ -586,7 +586,7 @@ export class BDTTokenContract extends BaseContract {
             value: BigNumber,
             txData: Partial<TxData> = {},
         ): Promise<number> {
-            const self = this as any as BDTTokenContract;
+            const self = this as any as RDXTokenContract;
             const encodedData = self._strictEncodeArguments('transfer(address,uint256)', [to,
     value
     ]);
@@ -605,7 +605,7 @@ export class BDTTokenContract extends BaseContract {
             to: string,
             value: BigNumber,
         ): string {
-            const self = this as any as BDTTokenContract;
+            const self = this as any as RDXTokenContract;
             const abiEncodedTransactionData = self._strictEncodeArguments('transfer(address,uint256)', [to,
     value
     ]);
@@ -618,7 +618,7 @@ export class BDTTokenContract extends BaseContract {
             defaultBlock?: BlockParam,
         ): Promise<boolean
         > {
-            const self = this as any as BDTTokenContract;
+            const self = this as any as RDXTokenContract;
             const encodedData = self._strictEncodeArguments('transfer(address,uint256)', [to,
         value
         ]);
@@ -648,7 +648,7 @@ export class BDTTokenContract extends BaseContract {
             defaultBlock?: BlockParam,
         ): Promise<BigNumber
         > {
-            const self = this as any as BDTTokenContract;
+            const self = this as any as RDXTokenContract;
             const encodedData = self._strictEncodeArguments('allowance(address,address)', [owner,
         spender
         ]);
@@ -674,20 +674,20 @@ export class BDTTokenContract extends BaseContract {
         artifact: ContractArtifact | SimpleContractArtifact,
         provider: Provider,
         txDefaults: Partial<TxData>,
-    ): Promise<BDTTokenContract> {
+    ): Promise<RDXTokenContract> {
         if (_.isUndefined(artifact.compilerOutput)) {
             throw new Error('Compiler output not found in the artifact file');
         }
         const bytecode = artifact.compilerOutput.evm.bytecode.object;
         const abi = artifact.compilerOutput.abi;
-        return BDTTokenContract.deployAsync(bytecode, abi, provider, txDefaults, );
+        return RDXTokenContract.deployAsync(bytecode, abi, provider, txDefaults, );
     }
     public static async deployAsync(
         bytecode: string,
         abi: ContractAbi,
         provider: Provider,
         txDefaults: Partial<TxData>,
-    ): Promise<BDTTokenContract> {
+    ): Promise<RDXTokenContract> {
         const constructorAbi = BaseContract._lookupConstructorAbi(abi);
         [] = BaseContract._formatABIDataItemList(
             constructorAbi.inputs,
@@ -706,13 +706,13 @@ export class BDTTokenContract extends BaseContract {
         const txHash = await web3Wrapper.sendTransactionAsync(txDataWithDefaults);
         logUtils.log(`transactionHash: ${txHash}`);
         const txReceipt = await web3Wrapper.awaitTransactionSuccessAsync(txHash);
-        logUtils.log(`BDTToken successfully deployed at ${txReceipt.contractAddress}`);
-        const contractInstance = new BDTTokenContract(abi, txReceipt.contractAddress as string, provider, txDefaults);
+        logUtils.log(`RDXToken successfully deployed at ${txReceipt.contractAddress}`);
+        const contractInstance = new RDXTokenContract(abi, txReceipt.contractAddress as string, provider, txDefaults);
         contractInstance.constructorArgs = [];
         return contractInstance;
     }
     constructor(abi: ContractAbi, address: string, provider: Provider, txDefaults?: Partial<TxData>) {
-        super('BDTToken', abi, address, provider, txDefaults);
+        super('RDXToken', abi, address, provider, txDefaults);
         classUtils.bindAll(this, ['_abiEncoderByFunctionSignature', 'address', 'abi', '_web3Wrapper']);
     }
 } // tslint:disable:max-file-line-count

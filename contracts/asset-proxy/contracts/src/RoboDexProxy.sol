@@ -16,16 +16,14 @@ pragma solidity 0.4.24;
 import "./MixinAuthorizable.sol";
 
 
-contract BitDexProxy is
+contract RoboDexProxy is
     MixinAuthorizable
 {
     // Id of this proxy.
-    bytes4 constant internal PROXY_ID = bytes4(keccak256("BitDexToken(address)"));
+    bytes4 constant internal PROXY_ID = bytes4(keccak256("RoboDexToken(address)"));
     
     // solhint-disable-next-line payable-fallback
-    function () 
-        external
-    {
+    function () external {
         assembly {
             // The first 4 bytes of calldata holds the function selector
             let selector := and(calldataload(0), 0xffffffff00000000000000000000000000000000000000000000000000000000)
@@ -178,11 +176,7 @@ contract BitDexProxy is
 
     /// @dev Gets the proxy id associated with the proxy address.
     /// @return Proxy id.
-    function getProxyId()
-        external
-        pure
-        returns (bytes4)
-    {
+    function getProxyId() external pure returns (bytes4) {
         return PROXY_ID;
     }
 }

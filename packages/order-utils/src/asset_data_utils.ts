@@ -1,10 +1,10 @@
 import {
     AssetProxyId,
-    BitDexAssetData,
     ERC20AssetData,
     ERC721AssetData,
     MultiAssetData,
     MultiAssetDataWithRecursiveDecoding,
+    RoboDexAssetData,
     SingleAssetData,
 } from '@0x/types';
 import { AbiEncoder, BigNumber } from '@0x/utils';
@@ -16,37 +16,6 @@ const encodingRules: AbiEncoder.EncodingRules = { shouldOptimize: true };
 const decodingRules: AbiEncoder.DecodingRules = { shouldConvertStructsToObjects: true };
 
 export const assetDataUtils = {
-    /**
-     * Encodes an BitDEX token address into a hex encoded assetData string, usable in the makerAssetData or
-     * takerAssetData fields in a 0x order.
-     * @param tokenAddress  The BitDEX token address to encode
-     * @return The hex encoded assetData string
-     */
-    encodeBitDexAssetData(tokenAddress: string): string {
-        const abiEncoder = new AbiEncoder.Method(constants.BITDEX_METHOD_ABI);
-        const args = [tokenAddress];
-        const assetData = abiEncoder.encode(args, encodingRules);
-        return assetData;
-    },
-    /**
-     * Decodes an BitDEX assetData hex string into it's corresponding BitDEX tokenAddress & assetProxyId
-     * @param assetData Hex encoded assetData string to decode
-     * @return An object containing the decoded tokenAddress & assetProxyId
-     */
-    decodeBitDexAssetData(assetData: string): BitDexAssetData {
-        assetDataUtils.assertIsBitDexAssetData(assetData);
-        const assetProxyId = assetDataUtils.decodeAssetProxyId(assetData);
-        const abiEncoder = new AbiEncoder.Method(constants.BITDEX_METHOD_ABI);
-        const decodedAssetData = abiEncoder.decode(assetData, decodingRules);
-        return {
-            assetProxyId,
-            // TODO(abandeali1): fix return types for `AbiEncoder.Method.decode` so that we can remove type assertion
-            tokenAddress: (decodedAssetData as any).tokenContract,
-            side: new BigNumber(0),
-            pnl: new BigNumber(0),
-            timeLock: new BigNumber(0),
-        };
-    },
     /**
      * Encodes an ERC20 token address into a hex encoded assetData string, usable in the makerAssetData or
      * takerAssetData fields in a 0x order.
@@ -103,6 +72,37 @@ export const assetDataUtils = {
             // TODO(abandeali1): fix return types for `AbiEncoder.Method.decode` so that we can remove type assertion
             tokenAddress: (decodedAssetData as any).tokenContract,
             tokenId: (decodedAssetData as any).tokenId,
+        };
+    },
+    /**
+     * Encodes an RoboDEX token address into a hex encoded assetData string, usable in the makerAssetData or
+     * takerAssetData fields in a 0x order.
+     * @param tokenAddress  The RoboDEX token address to encode
+     * @return The hex encoded assetData string
+     */
+    encodeRoboDexAssetData(tokenAddress: string): string {
+        const abiEncoder = new AbiEncoder.Method(constants.ROBODEX_METHOD_ABI);
+        const args = [tokenAddress];
+        const assetData = abiEncoder.encode(args, encodingRules);
+        return assetData;
+    },
+    /**
+     * Decodes an RoboDEX assetData hex string into it's corresponding RoboDEX tokenAddress & assetProxyId
+     * @param assetData Hex encoded assetData string to decode
+     * @return An object containing the decoded tokenAddress & assetProxyId
+     */
+    decodeRoboDexAssetData(assetData: string): RoboDexAssetData {
+        assetDataUtils.assertIsRoboDexAssetData(assetData);
+        const assetProxyId = assetDataUtils.decodeAssetProxyId(assetData);
+        const abiEncoder = new AbiEncoder.Method(constants.ROBODEX_METHOD_ABI);
+        const decodedAssetData = abiEncoder.decode(assetData, decodingRules);
+        return {
+            assetProxyId,
+            // TODO(abandeali1): fix return types for `AbiEncoder.Method.decode` so that we can remove type assertion
+            tokenAddress: (decodedAssetData as any).tokenContract,
+            side: new BigNumber(0),
+            pnl: new BigNumber(0),
+            timeLock: new BigNumber(0),
         };
     },
     /**
@@ -204,21 +204,14 @@ export const assetDataUtils = {
         }
         const assetProxyId = assetData.slice(0, constants.SELECTOR_CHAR_LENGTH_WITH_PREFIX);
         if (
-            assetProxyId !== AssetProxyId.BitDex &&
             assetProxyId !== AssetProxyId.ERC20 &&
             assetProxyId !== AssetProxyId.ERC721 &&
+            assetProxyId !== AssetProxyId.RoboDex &&
             assetProxyId !== AssetProxyId.MultiAsset
         ) {
             throw new Error(`Invalid assetProxyId: ${assetProxyId}`);
         }
         return assetProxyId;
-    },
-    /**
-     * Checks if the decoded asset data is valid BitDEX data
-     * @param decodedAssetData The decoded asset data to check
-     */
-    isBitDexAssetData(decodedAssetData: SingleAssetData | MultiAssetData): decodedAssetData is BitDexAssetData {
-        return decodedAssetData.assetProxyId === AssetProxyId.BitDex;
     },
     /**
      * Checks if the decoded asset data is valid ERC20 data
@@ -235,32 +228,18 @@ export const assetDataUtils = {
         return decodedAssetData.assetProxyId === AssetProxyId.ERC721;
     },
     /**
+     * Checks if the decoded asset data is valid RoboDEX data
+     * @param decodedAssetData The decoded asset data to check
+     */
+    isRoboDexAssetData(decodedAssetData: SingleAssetData | MultiAssetData): decodedAssetData is RoboDexAssetData {
+        return decodedAssetData.assetProxyId === AssetProxyId.RoboDex;
+    },
+    /**
      * Checks if the decoded asset data is valid MultiAsset data
      * @param decodedAssetData The decoded asset data to check
      */
     isMultiAssetData(decodedAssetData: SingleAssetData | MultiAssetData): decodedAssetData is MultiAssetData {
         return decodedAssetData.assetProxyId === AssetProxyId.MultiAsset;
-    },
-    /**
-     * Throws if the length or assetProxyId are invalid for the BitDexProxy.
-     * @param assetData Hex encoded assetData string
-     */
-    assertIsBitDexAssetData(assetData: string): void {
-        if (assetData.length < constants.BITDEX_ASSET_DATA_MIN_CHAR_LENGTH_WITH_PREFIX) {
-            throw new Error(
-                `Could not decode BitDEX Proxy Data. Expected length of encoded data to be at least ${
-                    constants.BITDEX_ASSET_DATA_MIN_CHAR_LENGTH_WITH_PREFIX
-                }. Got ${assetData.length}`,
-            );
-        }
-        const assetProxyId = assetDataUtils.decodeAssetProxyId(assetData);
-        if (assetProxyId !== AssetProxyId.BitDex) {
-            throw new Error(
-                `Could not decode BitDEX assetData. Expected assetProxyId to be BitDEX (${
-                    AssetProxyId.BitDex
-                }), but got ${assetProxyId}`,
-            );
-        }
     },
     /**
      * Throws if the length or assetProxyId are invalid for the ERC20Proxy.
@@ -305,6 +284,27 @@ export const assetDataUtils = {
         }
     },
     /**
+     * Throws if the length or assetProxyId are invalid for the RoboDexProxy.
+     * @param assetData Hex encoded assetData string
+     */
+    assertIsRoboDexAssetData(assetData: string): void {
+        if (assetData.length < constants.ROBODEX_ASSET_DATA_MIN_CHAR_LENGTH_WITH_PREFIX) {
+            throw new Error(
+                `Could not decode RoboDEX Proxy Data. Expected length of encoded data to be at least ${
+                    constants.ROBODEX_ASSET_DATA_MIN_CHAR_LENGTH_WITH_PREFIX
+                }. Got ${assetData.length}`,
+            );
+        }
+        const assetProxyId = assetDataUtils.decodeAssetProxyId(assetData);
+        if (assetProxyId !== AssetProxyId.RoboDex) {
+            throw new Error(
+                `Could not decode RoboDEX assetData. Expected assetProxyId to be RoboDEX (${
+                    AssetProxyId.RoboDex
+                }), but got ${assetProxyId}`,
+            );
+        }
+    },
+    /**
      * Throws if the length or assetProxyId are invalid for the MultiAssetProxy.
      * @param assetData Hex encoded assetData string
      */
@@ -332,14 +332,14 @@ export const assetDataUtils = {
     validateAssetDataOrThrow(assetData: string): void {
         const assetProxyId = assetDataUtils.decodeAssetProxyId(assetData);
         switch (assetProxyId) {
-            case AssetProxyId.BitDex:
-                assetDataUtils.assertIsBitDexAssetData(assetData);
-                break;
             case AssetProxyId.ERC20:
                 assetDataUtils.assertIsERC20AssetData(assetData);
                 break;
             case AssetProxyId.ERC721:
                 assetDataUtils.assertIsERC721AssetData(assetData);
+                break;
+            case AssetProxyId.RoboDex:
+                assetDataUtils.assertIsRoboDexAssetData(assetData);
                 break;
             case AssetProxyId.MultiAsset:
                 assetDataUtils.assertIsMultiAssetData(assetData);
@@ -351,20 +351,20 @@ export const assetDataUtils = {
     /**
      * Decode any assetData into it's corresponding assetData object
      * @param assetData Hex encoded assetData string to decode
-     * @return One of BitDEX, ERC20 or ERC721 assetData object
+     * @return One of ERC20, ERC721 or RoboDEX assetData object
      */
     decodeAssetDataOrThrow(assetData: string): SingleAssetData | MultiAssetData {
         const assetProxyId = assetDataUtils.decodeAssetProxyId(assetData);
         switch (assetProxyId) {
-            case AssetProxyId.BitDex:
-                const bitDexAssetData = assetDataUtils.decodeBitDexAssetData(assetData);
-                return bitDexAssetData;
             case AssetProxyId.ERC20:
                 const erc20AssetData = assetDataUtils.decodeERC20AssetData(assetData);
                 return erc20AssetData;
             case AssetProxyId.ERC721:
                 const erc721AssetData = assetDataUtils.decodeERC721AssetData(assetData);
                 return erc721AssetData;
+            case AssetProxyId.RoboDex:
+                const roboDexAssetData = assetDataUtils.decodeRoboDexAssetData(assetData);
+                return roboDexAssetData;
             case AssetProxyId.MultiAsset:
                 const multiAssetData = assetDataUtils.decodeMultiAssetData(assetData);
                 return multiAssetData;

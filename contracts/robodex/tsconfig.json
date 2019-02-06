@@ -7,9 +7,9 @@
     },
     "include": ["./src/**/*", "./test/**/*", "./generated-wrappers/**/*"],
     "files": [
-        "./generated-artifacts/IBitDexToken.json",
-        "./generated-artifacts/BitDexToken.json",
-        "./generated-artifacts/BDTToken.json"
+        "./generated-artifacts/IRoboDexToken.json",
+        "./generated-artifacts/RoboDexToken.json",
+        "./generated-artifacts/RDXToken.json"
     ],
     "exclude": ["./deploy/solc/solc_bin"]
 }

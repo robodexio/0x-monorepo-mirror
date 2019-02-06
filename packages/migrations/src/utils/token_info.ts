@@ -1,6 +1,6 @@
 import { BigNumber, NULL_BYTES } from '@0x/utils';
 
-import { BitDexToken, ERC20Token, ERC721Token } from '../types';
+import { ERC20Token, ERC721Token, RoboDexToken } from '../types';
 
 export const etherTokenByNetwork: { [networkId: number]: { address: string } } = {
     3: {
@@ -16,16 +16,6 @@ export const etherTokenByNetwork: { [networkId: number]: { address: string } } =
         address: '',
     },
 };
-
-export const bitDexTokenInfo: BitDexToken[] = [
-    {
-        name: 'BitDEX Token',
-        symbol: 'BDT',
-        decimals: new BigNumber(18),
-        ipfsHash: NULL_BYTES,
-        swarmHash: NULL_BYTES,
-    },
-];
 
 export const erc20TokenInfo: ERC20Token[] = [
     {
@@ -69,5 +59,15 @@ export const erc721TokenInfo: ERC721Token[] = [
     {
         name: '0xen ERC721',
         symbol: '0xen',
+    },
+];
+
+export const roboDexTokenInfo: RoboDexToken[] = [
+    {
+        name: 'RoboDEX Token',
+        symbol: 'RDX',
+        decimals: new BigNumber(18),
+        ipfsHash: NULL_BYTES,
+        swarmHash: NULL_BYTES,
     },
 ];

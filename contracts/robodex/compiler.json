@@ -20,8 +20,8 @@
         }
     },
     "contracts": [
-        "BitDexToken",
-        "IBitDexToken",
-        "BDTToken"
+        "IRoboDexToken",
+        "RoboDexToken",
+        "RDXToken"
     ]
 }

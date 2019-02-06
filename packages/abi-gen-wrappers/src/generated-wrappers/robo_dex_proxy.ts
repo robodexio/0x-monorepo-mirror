@@ -10,21 +10,21 @@ import * as ethers from 'ethers';
 import * as _ from 'lodash';
 // tslint:enable:no-unused-variable
 
-export type BitDexProxyEventArgs =
-    | BitDexProxyAuthorizedAddressAddedEventArgs
-    | BitDexProxyAuthorizedAddressRemovedEventArgs;
+export type RoboDexProxyEventArgs =
+    | RoboDexProxyAuthorizedAddressAddedEventArgs
+    | RoboDexProxyAuthorizedAddressRemovedEventArgs;
 
-export enum BitDexProxyEvents {
+export enum RoboDexProxyEvents {
     AuthorizedAddressAdded = 'AuthorizedAddressAdded',
     AuthorizedAddressRemoved = 'AuthorizedAddressRemoved',
 }
 
-export interface BitDexProxyAuthorizedAddressAddedEventArgs extends DecodedLogArgs {
+export interface RoboDexProxyAuthorizedAddressAddedEventArgs extends DecodedLogArgs {
     target: string;
     caller: string;
 }
 
-export interface BitDexProxyAuthorizedAddressRemovedEventArgs extends DecodedLogArgs {
+export interface RoboDexProxyAuthorizedAddressRemovedEventArgs extends DecodedLogArgs {
     target: string;
     caller: string;
 }
@@ -33,13 +33,13 @@ export interface BitDexProxyAuthorizedAddressRemovedEventArgs extends DecodedLog
 /* istanbul ignore next */
 // tslint:disable:no-parameter-reassignment
 // tslint:disable-next-line:class-name
-export class BitDexProxyContract extends BaseContract {
+export class RoboDexProxyContract extends BaseContract {
     public addAuthorizedAddress = {
         async sendTransactionAsync(
             target: string,
             txData: Partial<TxData> = {},
         ): Promise<string> {
-            const self = this as any as BitDexProxyContract;
+            const self = this as any as RoboDexProxyContract;
             const encodedData = self._strictEncodeArguments('addAuthorizedAddress(address)', [target
     ]);
             const txDataWithDefaults = await BaseContract._applyDefaultsToTxDataAsync(
@@ -61,7 +61,7 @@ export class BitDexProxyContract extends BaseContract {
             target: string,
             txData: Partial<TxData> = {},
         ): Promise<number> {
-            const self = this as any as BitDexProxyContract;
+            const self = this as any as RoboDexProxyContract;
             const encodedData = self._strictEncodeArguments('addAuthorizedAddress(address)', [target
     ]);
             const txDataWithDefaults = await BaseContract._applyDefaultsToTxDataAsync(
@@ -78,7 +78,7 @@ export class BitDexProxyContract extends BaseContract {
         getABIEncodedTransactionData(
             target: string,
         ): string {
-            const self = this as any as BitDexProxyContract;
+            const self = this as any as RoboDexProxyContract;
             const abiEncodedTransactionData = self._strictEncodeArguments('addAuthorizedAddress(address)', [target
     ]);
             return abiEncodedTransactionData;
@@ -89,7 +89,7 @@ export class BitDexProxyContract extends BaseContract {
             defaultBlock?: BlockParam,
         ): Promise<void
         > {
-            const self = this as any as BitDexProxyContract;
+            const self = this as any as RoboDexProxyContract;
             const encodedData = self._strictEncodeArguments('addAuthorizedAddress(address)', [target
         ]);
             const callDataWithDefaults = await BaseContract._applyDefaultsToTxDataAsync(
@@ -117,7 +117,7 @@ export class BitDexProxyContract extends BaseContract {
             defaultBlock?: BlockParam,
         ): Promise<string
         > {
-            const self = this as any as BitDexProxyContract;
+            const self = this as any as RoboDexProxyContract;
             const encodedData = self._strictEncodeArguments('authorities(uint256)', [index_0
         ]);
             const callDataWithDefaults = await BaseContract._applyDefaultsToTxDataAsync(
@@ -143,7 +143,7 @@ export class BitDexProxyContract extends BaseContract {
             target: string,
             txData: Partial<TxData> = {},
         ): Promise<string> {
-            const self = this as any as BitDexProxyContract;
+            const self = this as any as RoboDexProxyContract;
             const encodedData = self._strictEncodeArguments('removeAuthorizedAddress(address)', [target
     ]);
             const txDataWithDefaults = await BaseContract._applyDefaultsToTxDataAsync(
@@ -165,7 +165,7 @@ export class BitDexProxyContract extends BaseContract {
             target: string,
             txData: Partial<TxData> = {},
         ): Promise<number> {
-            const self = this as any as BitDexProxyContract;
+            const self = this as any as RoboDexProxyContract;
             const encodedData = self._strictEncodeArguments('removeAuthorizedAddress(address)', [target
     ]);
             const txDataWithDefaults = await BaseContract._applyDefaultsToTxDataAsync(
@@ -182,7 +182,7 @@ export class BitDexProxyContract extends BaseContract {
         getABIEncodedTransactionData(
             target: string,
         ): string {
-            const self = this as any as BitDexProxyContract;
+            const self = this as any as RoboDexProxyContract;
             const abiEncodedTransactionData = self._strictEncodeArguments('removeAuthorizedAddress(address)', [target
     ]);
             return abiEncodedTransactionData;
@@ -193,7 +193,7 @@ export class BitDexProxyContract extends BaseContract {
             defaultBlock?: BlockParam,
         ): Promise<void
         > {
-            const self = this as any as BitDexProxyContract;
+            const self = this as any as RoboDexProxyContract;
             const encodedData = self._strictEncodeArguments('removeAuthorizedAddress(address)', [target
         ]);
             const callDataWithDefaults = await BaseContract._applyDefaultsToTxDataAsync(
@@ -220,7 +220,7 @@ export class BitDexProxyContract extends BaseContract {
             defaultBlock?: BlockParam,
         ): Promise<string
         > {
-            const self = this as any as BitDexProxyContract;
+            const self = this as any as RoboDexProxyContract;
             const encodedData = self._strictEncodeArguments('owner()', []);
             const callDataWithDefaults = await BaseContract._applyDefaultsToTxDataAsync(
                 {
@@ -246,7 +246,7 @@ export class BitDexProxyContract extends BaseContract {
             index: BigNumber,
             txData: Partial<TxData> = {},
         ): Promise<string> {
-            const self = this as any as BitDexProxyContract;
+            const self = this as any as RoboDexProxyContract;
             const encodedData = self._strictEncodeArguments('removeAuthorizedAddressAtIndex(address,uint256)', [target,
     index
     ]);
@@ -271,7 +271,7 @@ export class BitDexProxyContract extends BaseContract {
             index: BigNumber,
             txData: Partial<TxData> = {},
         ): Promise<number> {
-            const self = this as any as BitDexProxyContract;
+            const self = this as any as RoboDexProxyContract;
             const encodedData = self._strictEncodeArguments('removeAuthorizedAddressAtIndex(address,uint256)', [target,
     index
     ]);
@@ -290,7 +290,7 @@ export class BitDexProxyContract extends BaseContract {
             target: string,
             index: BigNumber,
         ): string {
-            const self = this as any as BitDexProxyContract;
+            const self = this as any as RoboDexProxyContract;
             const abiEncodedTransactionData = self._strictEncodeArguments('removeAuthorizedAddressAtIndex(address,uint256)', [target,
     index
     ]);
@@ -303,7 +303,7 @@ export class BitDexProxyContract extends BaseContract {
             defaultBlock?: BlockParam,
         ): Promise<void
         > {
-            const self = this as any as BitDexProxyContract;
+            const self = this as any as RoboDexProxyContract;
             const encodedData = self._strictEncodeArguments('removeAuthorizedAddressAtIndex(address,uint256)', [target,
         index
         ]);
@@ -331,7 +331,7 @@ export class BitDexProxyContract extends BaseContract {
             defaultBlock?: BlockParam,
         ): Promise<string
         > {
-            const self = this as any as BitDexProxyContract;
+            const self = this as any as RoboDexProxyContract;
             const encodedData = self._strictEncodeArguments('getProxyId()', []);
             const callDataWithDefaults = await BaseContract._applyDefaultsToTxDataAsync(
                 {
@@ -358,7 +358,7 @@ export class BitDexProxyContract extends BaseContract {
             defaultBlock?: BlockParam,
         ): Promise<boolean
         > {
-            const self = this as any as BitDexProxyContract;
+            const self = this as any as RoboDexProxyContract;
             const encodedData = self._strictEncodeArguments('authorized(address)', [index_0
         ]);
             const callDataWithDefaults = await BaseContract._applyDefaultsToTxDataAsync(
@@ -385,7 +385,7 @@ export class BitDexProxyContract extends BaseContract {
             defaultBlock?: BlockParam,
         ): Promise<string[]
         > {
-            const self = this as any as BitDexProxyContract;
+            const self = this as any as RoboDexProxyContract;
             const encodedData = self._strictEncodeArguments('getAuthorizedAddresses()', []);
             const callDataWithDefaults = await BaseContract._applyDefaultsToTxDataAsync(
                 {
@@ -410,7 +410,7 @@ export class BitDexProxyContract extends BaseContract {
             newOwner: string,
             txData: Partial<TxData> = {},
         ): Promise<string> {
-            const self = this as any as BitDexProxyContract;
+            const self = this as any as RoboDexProxyContract;
             const encodedData = self._strictEncodeArguments('transferOwnership(address)', [newOwner
     ]);
             const txDataWithDefaults = await BaseContract._applyDefaultsToTxDataAsync(
@@ -432,7 +432,7 @@ export class BitDexProxyContract extends BaseContract {
             newOwner: string,
             txData: Partial<TxData> = {},
         ): Promise<number> {
-            const self = this as any as BitDexProxyContract;
+            const self = this as any as RoboDexProxyContract;
             const encodedData = self._strictEncodeArguments('transferOwnership(address)', [newOwner
     ]);
             const txDataWithDefaults = await BaseContract._applyDefaultsToTxDataAsync(
@@ -449,7 +449,7 @@ export class BitDexProxyContract extends BaseContract {
         getABIEncodedTransactionData(
             newOwner: string,
         ): string {
-            const self = this as any as BitDexProxyContract;
+            const self = this as any as RoboDexProxyContract;
             const abiEncodedTransactionData = self._strictEncodeArguments('transferOwnership(address)', [newOwner
     ]);
             return abiEncodedTransactionData;
@@ -460,7 +460,7 @@ export class BitDexProxyContract extends BaseContract {
             defaultBlock?: BlockParam,
         ): Promise<void
         > {
-            const self = this as any as BitDexProxyContract;
+            const self = this as any as RoboDexProxyContract;
             const encodedData = self._strictEncodeArguments('transferOwnership(address)', [newOwner
         ]);
             const callDataWithDefaults = await BaseContract._applyDefaultsToTxDataAsync(
@@ -485,20 +485,20 @@ export class BitDexProxyContract extends BaseContract {
         artifact: ContractArtifact | SimpleContractArtifact,
         provider: Provider,
         txDefaults: Partial<TxData>,
-    ): Promise<BitDexProxyContract> {
+    ): Promise<RoboDexProxyContract> {
         if (_.isUndefined(artifact.compilerOutput)) {
             throw new Error('Compiler output not found in the artifact file');
         }
         const bytecode = artifact.compilerOutput.evm.bytecode.object;
         const abi = artifact.compilerOutput.abi;
-        return BitDexProxyContract.deployAsync(bytecode, abi, provider, txDefaults, );
+        return RoboDexProxyContract.deployAsync(bytecode, abi, provider, txDefaults, );
     }
     public static async deployAsync(
         bytecode: string,
         abi: ContractAbi,
         provider: Provider,
         txDefaults: Partial<TxData>,
-    ): Promise<BitDexProxyContract> {
+    ): Promise<RoboDexProxyContract> {
         const constructorAbi = BaseContract._lookupConstructorAbi(abi);
         [] = BaseContract._formatABIDataItemList(
             constructorAbi.inputs,
@@ -517,13 +517,13 @@ export class BitDexProxyContract extends BaseContract {
         const txHash = await web3Wrapper.sendTransactionAsync(txDataWithDefaults);
         logUtils.log(`transactionHash: ${txHash}`);
         const txReceipt = await web3Wrapper.awaitTransactionSuccessAsync(txHash);
-        logUtils.log(`BitDexProxy successfully deployed at ${txReceipt.contractAddress}`);
-        const contractInstance = new BitDexProxyContract(abi, txReceipt.contractAddress as string, provider, txDefaults);
+        logUtils.log(`RoboDexProxy successfully deployed at ${txReceipt.contractAddress}`);
+        const contractInstance = new RoboDexProxyContract(abi, txReceipt.contractAddress as string, provider, txDefaults);
         contractInstance.constructorArgs = [];
         return contractInstance;
     }
     constructor(abi: ContractAbi, address: string, provider: Provider, txDefaults?: Partial<TxData>) {
-        super('BitDexProxy', abi, address, provider, txDefaults);
+        super('RoboDexProxy', abi, address, provider, txDefaults);
         classUtils.bindAll(this, ['_abiEncoderByFunctionSignature', 'address', 'abi', '_web3Wrapper']);
     }
 } // tslint:disable:max-file-line-count

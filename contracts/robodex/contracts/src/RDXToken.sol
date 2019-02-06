@@ -1,12 +1,12 @@
 pragma solidity ^0.4.24;
 
-import "./BitDexToken.sol";
+import "./RoboDexToken.sol";
 
 
-contract BDTToken is BitDexToken {
+contract RDXToken is RoboDexToken {
     // solhint-disable const-name-snakecase
     uint8 constant public decimals = 18;
     string constant public name = "0x Protocol Token";
-    string constant public symbol = "BDT";
+    string constant public symbol = "RDX";
     // solhint-enable const-name-snakecase
 }

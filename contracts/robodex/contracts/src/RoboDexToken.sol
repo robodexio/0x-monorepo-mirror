@@ -2,10 +2,10 @@ pragma solidity ^0.4.24;
 
 import "@0x/contracts-utils/contracts/src/LibBytes.sol";
 import "@0x/contracts-utils/contracts/src/SafeMath.sol";
-import "./interfaces/IBitDexToken.sol";
+import "./interfaces/IRoboDexToken.sol";
 
 
-contract BitDexToken is IBitDexToken, SafeMath {
+contract RoboDexToken is IRoboDexToken, SafeMath {
     using LibBytes for bytes;
 
     // EVENTS

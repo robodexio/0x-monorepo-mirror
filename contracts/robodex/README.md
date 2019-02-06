@@ -1,13 +1,13 @@
-## BitDEX Tokens
+## RoboDEX Tokens
 
-This package contains implementations of various BitDEX tokens, including BDT token. Addresses of the deployed contracts can be found in the [DEPLOYS](./DEPLOYS.json) file within this package.
+This package contains implementations of various RoboDEX tokens, including RDX token. Addresses of the deployed contracts can be found in the [DEPLOYS](./DEPLOYS.json) file within this package.
 
 ## Installation
 
 **Install**
 
 ```bash
-npm install @0x/contracts-bitdex --save
+npm install @0x/contracts-robodex --save
 ```
 
 ### Install Dependencies
@@ -29,13 +29,13 @@ yarn install
 To build this package and all other monorepo packages that it depends on, run the following from the monorepo root directory:
 
 ```bash
-PKG=@0x/contracts-bitdex yarn build
+PKG=@0x/contracts-robodex yarn build
 ```
 
 Or continuously rebuild on change:
 
 ```bash
-PKG=@0x/contracts-bitdex yarn watch
+PKG=@0x/contracts-robodex yarn watch
 ```
 
 ### Clean

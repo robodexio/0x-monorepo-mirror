@@ -3,7 +3,7 @@
         "version": "1.0.0",
         "changes": [
             {
-                "note": "Initial creating BitDEX",
+                "note": "Initial creating RoboDEX",
                 "pr": 1539
             }
         ]

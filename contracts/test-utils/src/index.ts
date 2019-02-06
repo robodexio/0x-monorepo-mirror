@@ -50,7 +50,7 @@ export {
     TakerAssetFillAmountScenario,
     TakerScenario,
     OrderInfo,
-    BitDexBalancesByOwner,
     ERC20BalancesByOwner,
+    RoboDexBalancesByOwner,
     FillResults,
 } from './types';

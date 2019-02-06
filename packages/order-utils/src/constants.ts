@@ -1,21 +1,6 @@
 import { BigNumber } from '@0x/utils';
 import { MethodAbi } from 'ethereum-types';
 
-const BITDEX_METHOD_ABI: MethodAbi = {
-    constant: false,
-    inputs: [
-        {
-            name: 'tokenContract',
-            type: 'address',
-        },
-    ],
-    name: 'BitDexToken',
-    outputs: [],
-    payable: false,
-    stateMutability: 'nonpayable',
-    type: 'function',
-};
-
 const ERC20_METHOD_ABI: MethodAbi = {
     constant: false,
     inputs: [
@@ -69,18 +54,33 @@ const MULTI_ASSET_METHOD_ABI: MethodAbi = {
     type: 'function',
 };
 
+const ROBODEX_METHOD_ABI: MethodAbi = {
+    constant: false,
+    inputs: [
+        {
+            name: 'tokenContract',
+            type: 'address',
+        },
+    ],
+    name: 'RoboDexToken',
+    outputs: [],
+    payable: false,
+    stateMutability: 'nonpayable',
+    type: 'function',
+};
+
 export const constants = {
     NULL_ADDRESS: '0x0000000000000000000000000000000000000000',
     NULL_BYTES: '0x',
-    NULL_BITDEX_ASSET_DATA: '0x5d388e170000000000000000000000000000000000000000000000000000000000000000',
     NULL_ERC20_ASSET_DATA: '0xf47261b00000000000000000000000000000000000000000000000000000000000000000',
+    NULL_ROBODEX_ASSET_DATA: '0x0e2042d80000000000000000000000000000000000000000000000000000000000000000',
     // tslint:disable-next-line:custom-no-magic-numbers
     UNLIMITED_ALLOWANCE_IN_BASE_UNITS: new BigNumber(2).pow(256).minus(1),
     TESTRPC_NETWORK_ID: 50,
     ADDRESS_LENGTH: 20,
-    BITDEX_ASSET_DATA_MIN_CHAR_LENGTH_WITH_PREFIX: 196,
     ERC20_ASSET_DATA_MIN_CHAR_LENGTH_WITH_PREFIX: 74,
     ERC721_ASSET_DATA_MIN_CHAR_LENGTH_WITH_PREFIX: 136,
+    ROBODEX_ASSET_DATA_MIN_CHAR_LENGTH_WITH_PREFIX: 196,
     MULTI_ASSET_DATA_MIN_CHAR_LENGTH_WITH_PREFIX: 266,
     SELECTOR_CHAR_LENGTH_WITH_PREFIX: 10,
     INFINITE_TIMESTAMP_SEC: new BigNumber(2524604400), // Close to infinite
@@ -120,8 +120,8 @@ export const constants = {
             { name: 'data', type: 'bytes' },
         ],
     },
-    BITDEX_METHOD_ABI,
     ERC20_METHOD_ABI,
     ERC721_METHOD_ABI,
     MULTI_ASSET_METHOD_ABI,
+    ROBODEX_METHOD_ABI,
 };

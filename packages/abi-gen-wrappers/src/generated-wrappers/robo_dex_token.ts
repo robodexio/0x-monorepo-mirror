@@ -10,18 +10,18 @@ import * as ethers from 'ethers';
 import * as _ from 'lodash';
 // tslint:enable:no-unused-variable
 
-export type BitDexTokenEventArgs =
-    | BitDexTokenVerify0xEventArgs
-    | BitDexTokenTransferEventArgs
-    | BitDexTokenApprovalEventArgs;
+export type RoboDexTokenEventArgs =
+    | RoboDexTokenVerify0xEventArgs
+    | RoboDexTokenTransferEventArgs
+    | RoboDexTokenApprovalEventArgs;
 
-export enum BitDexTokenEvents {
+export enum RoboDexTokenEvents {
     Verify0x = 'Verify0x',
     Transfer = 'Transfer',
     Approval = 'Approval',
 }
 
-export interface BitDexTokenVerify0xEventArgs extends DecodedLogArgs {
+export interface RoboDexTokenVerify0xEventArgs extends DecodedLogArgs {
     from: string;
     to: string;
     side: number;
@@ -30,13 +30,13 @@ export interface BitDexTokenVerify0xEventArgs extends DecodedLogArgs {
     timeLock: BigNumber;
 }
 
-export interface BitDexTokenTransferEventArgs extends DecodedLogArgs {
+export interface RoboDexTokenTransferEventArgs extends DecodedLogArgs {
     from: string;
     to: string;
     value: BigNumber;
 }
 
-export interface BitDexTokenApprovalEventArgs extends DecodedLogArgs {
+export interface RoboDexTokenApprovalEventArgs extends DecodedLogArgs {
     owner: string;
     spender: string;
     value: BigNumber;
@@ -46,14 +46,14 @@ export interface BitDexTokenApprovalEventArgs extends DecodedLogArgs {
 /* istanbul ignore next */
 // tslint:disable:no-parameter-reassignment
 // tslint:disable-next-line:class-name
-export class BitDexTokenContract extends BaseContract {
+export class RoboDexTokenContract extends BaseContract {
     public approve = {
         async sendTransactionAsync(
             spender: string,
             value: BigNumber,
             txData: Partial<TxData> = {},
         ): Promise<string> {
-            const self = this as any as BitDexTokenContract;
+            const self = this as any as RoboDexTokenContract;
             const encodedData = self._strictEncodeArguments('approve(address,uint256)', [spender,
     value
     ]);
@@ -78,7 +78,7 @@ export class BitDexTokenContract extends BaseContract {
             value: BigNumber,
             txData: Partial<TxData> = {},
         ): Promise<number> {
-            const self = this as any as BitDexTokenContract;
+            const self = this as any as RoboDexTokenContract;
             const encodedData = self._strictEncodeArguments('approve(address,uint256)', [spender,
     value
     ]);
@@ -97,7 +97,7 @@ export class BitDexTokenContract extends BaseContract {
             spender: string,
             value: BigNumber,
         ): string {
-            const self = this as any as BitDexTokenContract;
+            const self = this as any as RoboDexTokenContract;
             const abiEncodedTransactionData = self._strictEncodeArguments('approve(address,uint256)', [spender,
     value
     ]);
@@ -110,7 +110,7 @@ export class BitDexTokenContract extends BaseContract {
             defaultBlock?: BlockParam,
         ): Promise<boolean
         > {
-            const self = this as any as BitDexTokenContract;
+            const self = this as any as RoboDexTokenContract;
             const encodedData = self._strictEncodeArguments('approve(address,uint256)', [spender,
         value
         ]);
@@ -138,7 +138,7 @@ export class BitDexTokenContract extends BaseContract {
             defaultBlock?: BlockParam,
         ): Promise<BigNumber
         > {
-            const self = this as any as BitDexTokenContract;
+            const self = this as any as RoboDexTokenContract;
             const encodedData = self._strictEncodeArguments('totalSupply()', []);
             const callDataWithDefaults = await BaseContract._applyDefaultsToTxDataAsync(
                 {
@@ -164,7 +164,7 @@ export class BitDexTokenContract extends BaseContract {
             value: BigNumber,
             txData: Partial<TxData> = {},
         ): Promise<string> {
-            const self = this as any as BitDexTokenContract;
+            const self = this as any as RoboDexTokenContract;
             const encodedData = self._strictEncodeArguments('increaseAllowance(address,uint256)', [spender,
     value
     ]);
@@ -189,7 +189,7 @@ export class BitDexTokenContract extends BaseContract {
             value: BigNumber,
             txData: Partial<TxData> = {},
         ): Promise<number> {
-            const self = this as any as BitDexTokenContract;
+            const self = this as any as RoboDexTokenContract;
             const encodedData = self._strictEncodeArguments('increaseAllowance(address,uint256)', [spender,
     value
     ]);
@@ -208,7 +208,7 @@ export class BitDexTokenContract extends BaseContract {
             spender: string,
             value: BigNumber,
         ): string {
-            const self = this as any as BitDexTokenContract;
+            const self = this as any as RoboDexTokenContract;
             const abiEncodedTransactionData = self._strictEncodeArguments('increaseAllowance(address,uint256)', [spender,
     value
     ]);
@@ -221,7 +221,7 @@ export class BitDexTokenContract extends BaseContract {
             defaultBlock?: BlockParam,
         ): Promise<boolean
         > {
-            const self = this as any as BitDexTokenContract;
+            const self = this as any as RoboDexTokenContract;
             const encodedData = self._strictEncodeArguments('increaseAllowance(address,uint256)', [spender,
         value
         ]);
@@ -253,7 +253,7 @@ export class BitDexTokenContract extends BaseContract {
             timeLock: BigNumber,
             txData: Partial<TxData> = {},
         ): Promise<string> {
-            const self = this as any as BitDexTokenContract;
+            const self = this as any as RoboDexTokenContract;
             const encodedData = self._strictEncodeArguments('transferFrom(address,address,uint256,uint8,int256,uint256)', [from,
     to,
     value,
@@ -290,7 +290,7 @@ export class BitDexTokenContract extends BaseContract {
             timeLock: BigNumber,
             txData: Partial<TxData> = {},
         ): Promise<number> {
-            const self = this as any as BitDexTokenContract;
+            const self = this as any as RoboDexTokenContract;
             const encodedData = self._strictEncodeArguments('transferFrom(address,address,uint256,uint8,int256,uint256)', [from,
     to,
     value,
@@ -317,7 +317,7 @@ export class BitDexTokenContract extends BaseContract {
             pnl: BigNumber,
             timeLock: BigNumber,
         ): string {
-            const self = this as any as BitDexTokenContract;
+            const self = this as any as RoboDexTokenContract;
             const abiEncodedTransactionData = self._strictEncodeArguments('transferFrom(address,address,uint256,uint8,int256,uint256)', [from,
     to,
     value,
@@ -338,7 +338,7 @@ export class BitDexTokenContract extends BaseContract {
             defaultBlock?: BlockParam,
         ): Promise<boolean
         > {
-            const self = this as any as BitDexTokenContract;
+            const self = this as any as RoboDexTokenContract;
             const encodedData = self._strictEncodeArguments('transferFrom(address,address,uint256,uint8,int256,uint256)', [from,
         to,
         value,
@@ -371,7 +371,7 @@ export class BitDexTokenContract extends BaseContract {
             defaultBlock?: BlockParam,
         ): Promise<BigNumber
         > {
-            const self = this as any as BitDexTokenContract;
+            const self = this as any as RoboDexTokenContract;
             const encodedData = self._strictEncodeArguments('balanceOf(address)', [owner
         ]);
             const callDataWithDefaults = await BaseContract._applyDefaultsToTxDataAsync(
@@ -398,7 +398,7 @@ export class BitDexTokenContract extends BaseContract {
             value: BigNumber,
             txData: Partial<TxData> = {},
         ): Promise<string> {
-            const self = this as any as BitDexTokenContract;
+            const self = this as any as RoboDexTokenContract;
             const encodedData = self._strictEncodeArguments('decreaseAllowance(address,uint256)', [spender,
     value
     ]);
@@ -423,7 +423,7 @@ export class BitDexTokenContract extends BaseContract {
             value: BigNumber,
             txData: Partial<TxData> = {},
         ): Promise<number> {
-            const self = this as any as BitDexTokenContract;
+            const self = this as any as RoboDexTokenContract;
             const encodedData = self._strictEncodeArguments('decreaseAllowance(address,uint256)', [spender,
     value
     ]);
@@ -442,7 +442,7 @@ export class BitDexTokenContract extends BaseContract {
             spender: string,
             value: BigNumber,
         ): string {
-            const self = this as any as BitDexTokenContract;
+            const self = this as any as RoboDexTokenContract;
             const abiEncodedTransactionData = self._strictEncodeArguments('decreaseAllowance(address,uint256)', [spender,
     value
     ]);
@@ -455,7 +455,7 @@ export class BitDexTokenContract extends BaseContract {
             defaultBlock?: BlockParam,
         ): Promise<boolean
         > {
-            const self = this as any as BitDexTokenContract;
+            const self = this as any as RoboDexTokenContract;
             const encodedData = self._strictEncodeArguments('decreaseAllowance(address,uint256)', [spender,
         value
         ]);
@@ -483,7 +483,7 @@ export class BitDexTokenContract extends BaseContract {
             value: BigNumber,
             txData: Partial<TxData> = {},
         ): Promise<string> {
-            const self = this as any as BitDexTokenContract;
+            const self = this as any as RoboDexTokenContract;
             const encodedData = self._strictEncodeArguments('transfer(address,uint256)', [to,
     value
     ]);
@@ -508,7 +508,7 @@ export class BitDexTokenContract extends BaseContract {
             value: BigNumber,
             txData: Partial<TxData> = {},
         ): Promise<number> {
-            const self = this as any as BitDexTokenContract;
+            const self = this as any as RoboDexTokenContract;
             const encodedData = self._strictEncodeArguments('transfer(address,uint256)', [to,
     value
     ]);
@@ -527,7 +527,7 @@ export class BitDexTokenContract extends BaseContract {
             to: string,
             value: BigNumber,
         ): string {
-            const self = this as any as BitDexTokenContract;
+            const self = this as any as RoboDexTokenContract;
             const abiEncodedTransactionData = self._strictEncodeArguments('transfer(address,uint256)', [to,
     value
     ]);
@@ -540,7 +540,7 @@ export class BitDexTokenContract extends BaseContract {
             defaultBlock?: BlockParam,
         ): Promise<boolean
         > {
-            const self = this as any as BitDexTokenContract;
+            const self = this as any as RoboDexTokenContract;
             const encodedData = self._strictEncodeArguments('transfer(address,uint256)', [to,
         value
         ]);
@@ -570,7 +570,7 @@ export class BitDexTokenContract extends BaseContract {
             defaultBlock?: BlockParam,
         ): Promise<BigNumber
         > {
-            const self = this as any as BitDexTokenContract;
+            const self = this as any as RoboDexTokenContract;
             const encodedData = self._strictEncodeArguments('allowance(address,address)', [owner,
         spender
         ]);
@@ -596,20 +596,20 @@ export class BitDexTokenContract extends BaseContract {
         artifact: ContractArtifact | SimpleContractArtifact,
         provider: Provider,
         txDefaults: Partial<TxData>,
-    ): Promise<BitDexTokenContract> {
+    ): Promise<RoboDexTokenContract> {
         if (_.isUndefined(artifact.compilerOutput)) {
             throw new Error('Compiler output not found in the artifact file');
         }
         const bytecode = artifact.compilerOutput.evm.bytecode.object;
         const abi = artifact.compilerOutput.abi;
-        return BitDexTokenContract.deployAsync(bytecode, abi, provider, txDefaults, );
+        return RoboDexTokenContract.deployAsync(bytecode, abi, provider, txDefaults, );
     }
     public static async deployAsync(
         bytecode: string,
         abi: ContractAbi,
         provider: Provider,
         txDefaults: Partial<TxData>,
-    ): Promise<BitDexTokenContract> {
+    ): Promise<RoboDexTokenContract> {
         const constructorAbi = BaseContract._lookupConstructorAbi(abi);
         [] = BaseContract._formatABIDataItemList(
             constructorAbi.inputs,
@@ -628,13 +628,13 @@ export class BitDexTokenContract extends BaseContract {
         const txHash = await web3Wrapper.sendTransactionAsync(txDataWithDefaults);
         logUtils.log(`transactionHash: ${txHash}`);
         const txReceipt = await web3Wrapper.awaitTransactionSuccessAsync(txHash);
-        logUtils.log(`BitDexToken successfully deployed at ${txReceipt.contractAddress}`);
-        const contractInstance = new BitDexTokenContract(abi, txReceipt.contractAddress as string, provider, txDefaults);
+        logUtils.log(`RoboDexToken successfully deployed at ${txReceipt.contractAddress}`);
+        const contractInstance = new RoboDexTokenContract(abi, txReceipt.contractAddress as string, provider, txDefaults);
         contractInstance.constructorArgs = [];
         return contractInstance;
     }
     constructor(abi: ContractAbi, address: string, provider: Provider, txDefaults?: Partial<TxData>) {
-        super('BitDexToken', abi, address, provider, txDefaults);
+        super('RoboDexToken', abi, address, provider, txDefaults);
         classUtils.bindAll(this, ['_abiEncoderByFunctionSignature', 'address', 'abi', '_web3Wrapper']);
     }
 } // tslint:disable:max-file-line-count
