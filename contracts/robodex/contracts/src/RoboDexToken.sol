@@ -65,8 +65,8 @@ contract RoboDexToken is ERC20Token {
     ) external returns (bool) {
         Position memory makerPosition = parseAssetData(makerAssetData);
         Position memory takerPosition = parseAssetData(takerAssetData);
-        uint256 makerPositionId = calculatePositionHash(makerPosition);
-        uint256 takerPositionId = calculatePositionHash(takerPosition);
+        bytes32 makerPositionId = calculatePositionHash(makerPosition);
+        bytes32 takerPositionId = calculatePositionHash(takerPosition);
         bool makerOpening = isPositionOpened(makerPositionId);
         bool takerOpening = isPositionOpened(takerPositionId);
         // TODO: More checks
@@ -82,7 +82,8 @@ contract RoboDexToken is ERC20Token {
                 makerPosition.tradeType,
                 makerPosition.amount,
                 makerPosition.margin,
-                makerPosition.price
+                makerPosition.openPrice,
+                makerPosition.closePrice
             );
             openPosition(
                 takerPosition.baseToken,
@@ -92,7 +93,8 @@ contract RoboDexToken is ERC20Token {
                 takerPosition.tradeType,
                 takerPosition.amount,
                 takerPosition.margin,
-                takerPosition.price
+                takerPosition.openPrice,
+                takerPosition.closePrice
             );
         } else if (takerOpening) {
             // Taker is opening position
@@ -105,7 +107,8 @@ contract RoboDexToken is ERC20Token {
                 takerPosition.tradeType,
                 takerPosition.amount,
                 takerPosition.margin,
-                takerPosition.price
+                takerPosition.openPrice,
+                takerPosition.closePrice
             );
             closePosition(makerPositionId, makerPosition.makerAddress, takerPosition.makerAddress, dexData);
         } else if (makerOpening) {
@@ -119,7 +122,8 @@ contract RoboDexToken is ERC20Token {
                 makerPosition.tradeType,
                 makerPosition.amount,
                 makerPosition.margin,
-                makerPosition.price
+                makerPosition.openPrice,
+                makerPosition.closePrice
             );
             closePosition(takerPositionId, takerPosition.makerAddress, makerPosition.makerAddress, dexData);
         }
@@ -133,7 +137,8 @@ contract RoboDexToken is ERC20Token {
         TradeType tradeType,
         int256 amount,
         uint256 margin,
-        uint256 price,
+        uint256 openPrice,
+        uint256 closePrice,
         uint256 filled,
         uint256 timestamp
     ) {
@@ -145,7 +150,8 @@ contract RoboDexToken is ERC20Token {
         tradeType = position.tradeType;
         amount = position.amount;
         margin = position.margin;
-        price = position.price;
+        openPrice = position.openPrice;
+        closePrice = position.closePrice;
         filled = position.filled;
         timestamp = position.timestamp;
     }
@@ -158,7 +164,8 @@ contract RoboDexToken is ERC20Token {
         TradeType tradeType,
         int256 amount,
         uint256 margin,
-        uint256 price
+        uint256 openPrice,
+        uint256 closePrice
     ) internal returns (bytes32 positionId) {
         require(
             baseToken != address(0) && quoteToken != address(0) && baseToken != quoteToken,
@@ -174,12 +181,12 @@ contract RoboDexToken is ERC20Token {
         );
         Position memory position = Position(
             ERC20Token(baseToken), ERC20Token(quoteToken),
-            makerAddress, takerAddress, tradeType, amount, margin, price, 0, now
+            makerAddress, takerAddress, tradeType, amount, margin, openPrice, closePrice, 0, now
         );
         positionId = calculatePositionHash(position);
         require(_positions[positionId].timestamp == 0, "POSITION_ALREADY_OPENED");
         _positions[positionId] = position;
-        emit PositionOpened(positionId, baseToken, quoteToken, makerAddress, takerAddress, tradeType, amount, margin, price);
+        emit PositionOpened(positionId, baseToken, quoteToken, makerAddress, takerAddress, tradeType, amount, margin, openPrice, closePrice);
     }
 
     function closePosition(
@@ -238,12 +245,13 @@ contract RoboDexToken is ERC20Token {
         TradeType tradeType = (assetData[128] > 0 ? TradeType.LONG : TradeType.SHORT);
         int256 amount = int256(assetData.readBytes32(160));
         uint256 margin = assetData.readUint256(192);
-        uint256 price = assetData.readUint256(224);
-        uint256 filled = assetData.readUint256(256);
-        uint256 timestamp = assetData.readUint256(288);
+        uint256 openPrice = assetData.readUint256(224);
+        uint256 closePrice = assetData.readUint256(256);
+        uint256 filled = assetData.readUint256(288);
+        uint256 timestamp = assetData.readUint256(320);
         return Position(
             ERC20Token(baseToken), ERC20Token(quoteToken),
-            makerAddress, takerAddress, tradeType, amount, margin, price, filled, timestamp
+            makerAddress, takerAddress, tradeType, amount, margin, openPrice, closePrice, filled, timestamp
         );
     }
 
