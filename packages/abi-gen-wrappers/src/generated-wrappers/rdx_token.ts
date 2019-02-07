@@ -407,7 +407,7 @@ export class RDXTokenContract extends BaseContract {
             positionId: string,
             callData: Partial<CallData> = {},
             defaultBlock?: BlockParam,
-        ): Promise<[string, string, string, string, number, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber]
+        ): Promise<[string, string, string, string, number, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, number]
         > {
             const self = this as any as RDXTokenContract;
             const encodedData = self._strictEncodeArguments('getPositionInfo(bytes32)', [positionId
@@ -424,7 +424,7 @@ export class RDXTokenContract extends BaseContract {
             BaseContract._throwIfRevertWithReasonCallResult(rawCallResult);
             const abiEncoder = self._lookupAbiEncoder('getPositionInfo(bytes32)');
             // tslint:disable boolean-naming
-            const result = abiEncoder.strictDecodeReturnValue<[string, string, string, string, number, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber]
+            const result = abiEncoder.strictDecodeReturnValue<[string, string, string, string, number, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, number]
         >(rawCallResult);
             // tslint:enable boolean-naming
             return result;

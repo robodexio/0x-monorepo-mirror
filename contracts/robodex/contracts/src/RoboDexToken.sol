@@ -14,6 +14,13 @@ contract RoboDexToken is ERC20Token {
         LONG   // BUY
     }
 
+    enum PositionState {
+        NEW,
+        OPENED,
+        FILLED,
+        CLOSED
+    }
+
     struct Position {
         ERC20Token baseToken;
         ERC20Token quoteToken;
@@ -26,6 +33,7 @@ contract RoboDexToken is ERC20Token {
         uint256 closePrice;
         uint256 filled;
         uint256 timestamp;
+        PositionState state;
     }
 
     // EVENTS
@@ -67,8 +75,8 @@ contract RoboDexToken is ERC20Token {
         Position memory takerPosition = parseAssetData(takerAssetData);
         bytes32 makerPositionId = calculatePositionHash(makerPosition);
         bytes32 takerPositionId = calculatePositionHash(takerPosition);
-        bool makerOpening = isPositionOpened(makerPositionId);
-        bool takerOpening = isPositionOpened(takerPositionId);
+        bool makerOpening = !isPositionOpened(makerPositionId);
+        bool takerOpening = !isPositionOpened(takerPositionId);
         // TODO: More checks
         if (makerOpening && takerOpening) {
             // Both maker and taker are opening positions
@@ -140,7 +148,8 @@ contract RoboDexToken is ERC20Token {
         uint256 openPrice,
         uint256 closePrice,
         uint256 filled,
-        uint256 timestamp
+        uint256 timestamp,
+        PositionState state
     ) {
         Position memory position = _positions[positionId];
         baseToken = position.baseToken;
@@ -154,6 +163,7 @@ contract RoboDexToken is ERC20Token {
         closePrice = position.closePrice;
         filled = position.filled;
         timestamp = position.timestamp;
+        state = position.state;
     }
     
     function openPosition(
@@ -169,19 +179,19 @@ contract RoboDexToken is ERC20Token {
     ) internal returns (bytes32 positionId) {
         require(
             baseToken != address(0) && quoteToken != address(0) && baseToken != quoteToken,
-            "ERC20_TOKEN_ADDRESSES_INCORRECT"
+            "ERC20_TOKEN_ADDRESSES_INVALID"
         );
         require(
             makerAddress != address(0) && takerAddress != address(0) && makerAddress != takerAddress,
-            "TRADER_ADDRESSES_INCORRECT"
+            "TRADER_ADDRESSES_INVALID"
         );
         require(
             tradeType == TradeType.SHORT || tradeType == TradeType.LONG,
-            "TRADE_TYPE_INCORRECT"
+            "TRADE_TYPE_INVALID"
         );
         Position memory position = Position(
-            ERC20Token(baseToken), ERC20Token(quoteToken),
-            makerAddress, takerAddress, tradeType, amount, margin, openPrice, closePrice, 0, now
+            ERC20Token(baseToken), ERC20Token(quoteToken), makerAddress, takerAddress, tradeType,
+            amount, margin, openPrice, closePrice, 0, now, PositionState.NEW
         );
         positionId = calculatePositionHash(position);
         require(_positions[positionId].timestamp == 0, "POSITION_ALREADY_OPENED");
@@ -197,24 +207,24 @@ contract RoboDexToken is ERC20Token {
     ) internal {
         Position storage position = _positions[positionId];
         require(
-            position.timestamp > 0,
+            position.state == PositionState.OPENED,
             "POSITION_IS_NOT_OPENED"
         );
         require(
             makerAddress != address(0) && takerAddress != address(0) && makerAddress != takerAddress,
-            "TRADER_ADDRESSES_INCORRECT"
+            "TRADER_ADDRESSES_INVALID"
         );
         // TODO: Add more checks (makerAddress, takerAddress, dexData)
         int256 balance = calculatePNL(dexData);
         // TODO: Liquidate trades in the position
         if (position.tradeType == TradeType.SHORT) {
             // TODO
-            transferTokenSigned(position.baseToken, makerAddress, takerAddress, balance);
+            //transferTokenSigned(position.baseToken, makerAddress, takerAddress, balance);
         } else if (position.tradeType == TradeType.LONG) {
             // TODO
-            transferTokenSigned(position.quoteToken, makerAddress, takerAddress, balance);
+            //transferTokenSigned(position.quoteToken, makerAddress, takerAddress, balance);
         } else {
-            revert("POSITION_IS_NOT_OPENED");
+            revert("POSITION_TRADE_TYPE_INVALID");
         }
         emit PositionClosed(positionId, makerAddress, takerAddress, balance);
     }
@@ -237,30 +247,33 @@ contract RoboDexToken is ERC20Token {
 
     function parseAssetData(bytes assetData) internal pure returns (Position) {
         // TODO: Check
-        require(assetData.length == 130, "INCORRECT_ASSET_DATA_LENGTH");
+        require(assetData.length == 320, "INVALID_ASSET_DATA_LENGTH");
         address baseToken = assetData.readAddress(0);
         address quoteToken = assetData.readAddress(32);
         address makerAddress = assetData.readAddress(64);
         address takerAddress = assetData.readAddress(96);
-        TradeType tradeType = (assetData[128] > 0 ? TradeType.LONG : TradeType.SHORT);
+        TradeType tradeType = (assetData[159] > 0 ? TradeType.LONG : TradeType.SHORT);
         int256 amount = int256(assetData.readBytes32(160));
         uint256 margin = assetData.readUint256(192);
         uint256 openPrice = assetData.readUint256(224);
         uint256 closePrice = assetData.readUint256(256);
-        uint256 filled = assetData.readUint256(288);
-        uint256 timestamp = assetData.readUint256(320);
+        uint256 timestamp = assetData.readUint256(288);
         return Position(
-            ERC20Token(baseToken), ERC20Token(quoteToken),
-            makerAddress, takerAddress, tradeType, amount, margin, openPrice, closePrice, filled, timestamp
+            ERC20Token(baseToken), ERC20Token(quoteToken), makerAddress, takerAddress, tradeType,
+            amount, margin, openPrice, closePrice, 0, timestamp, PositionState.NEW
         );
     }
 
     function isPositionOpened(bytes32 positionId) internal view returns (bool) {
-        return _positions[positionId].timestamp > 0 && _positions[positionId].margin > 0;
+        return _positions[positionId].state == PositionState.OPENED;
     }
 
     function isPositionFilled(bytes32 positionId) internal view returns (bool) {
-        return _positions[positionId].timestamp > 0 && _positions[positionId].filled == 0;
+        return _positions[positionId].state == PositionState.FILLED;
+    }
+
+    function isPositionClosed(bytes32 positionId) internal view returns (bool) {
+        return _positions[positionId].state == PositionState.CLOSED;
     }
 
     function calculatePositionHash(Position memory position) internal pure returns (bytes32) {
