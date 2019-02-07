@@ -126,5 +126,5 @@ __pycache__
 python-packages/*/src/*.egg-info
 python-packages/*/.coverage
 
-flatten*
+scripts
 bin

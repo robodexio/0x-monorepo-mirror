@@ -82,17 +82,11 @@ contract RoboDexProxy is MixinAuthorizable {
                 // | Area     | Offset | Length  | Contents                            |
                 // |----------|--------|---------|-------------------------------------|
                 // | Header   | 0      | 4       | function selector                   |
-                // | Params   |        | 1 * 32  | function parameters:                |
+                // | Params   |        | 704     | function parameters:                |
                 // |          | 4      | 12 + 20 |   1. token address                  |
-                // |          |        |         | makerAssetData:                     |
-                // |          | 36     | 32      | makerAssetData Length               |
-                // |          | 68     | **      | makerAssetData Contents             |
-                // |          |        |         | takerAssetData:                     |
-                // |          | **     | 32      | takerAssetData Length               |
-                // |          | **     | **      | takerAssetData Contents             |
-                // |          |        |         | dexData:                            |
-                // |          | **     | 32      | dexData Length                      |
-                // |          | **     | **      | dexData Contents                    |
+                // |          | 36     | 320     |   2. makerAssetData                 |
+                // |          | 356    | 320     |   3. takerAssetData                 |
+                // |          | 676    | 32      |   4. dexData                        |
 
                 // We construct calldata for the `token.peddle` ABI.
                 // The layout of this calldata is in the table below.
@@ -101,9 +95,9 @@ contract RoboDexProxy is MixinAuthorizable {
                 // |----------|--------|---------|-------------------------------------|
                 // | Header   | 0      | 4       | function selector                   |
                 // | Params   |        |         | function parameters:                |
-                // |          | 4      | ** + 32 |   1. makerAssetData                 |
-                // |          | **     | ** + 32 |   2. takerAssetData                 |
-                // |          | **     | ** + 32 |   3. dexData                        |
+                // |          | 4      | 320     |   1. makerAssetData                 |
+                // |          | 324    | 320     |   2. takerAssetData                 |
+                // |          | 644    | 32      |   3. dexData                        |
 
                 /////// Read token transfer parameters from calldata ///////
                 // * The token address is stored in `assetData`.
@@ -127,9 +121,6 @@ contract RoboDexProxy is MixinAuthorizable {
                 mstore(0, 0xf4970c9000000000000000000000000000000000000000000000000000000000)
                 
                 /////// Setup Params Area ///////
-                // We copy the fields `from`, `to` and `amount` in bulk
-                // from our own calldata to the new calldata.
-                //calldatacopy(4, 36, 96)
                 // We copy the fields `makerAssetData`, `takerAssetData` and `dexData` in bulk
                 // from our own asset data to the new calldata.
                 let tokenDataOffset := add(tokenOffset, 32)

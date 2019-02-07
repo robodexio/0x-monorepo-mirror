@@ -55,7 +55,7 @@ export async function runMigrationsAsync(provider: Provider, txDefaults: TxData)
     const rdxToken = await wrappers.RDXTokenContract.deployFrom0xArtifactAsync(
         artifacts.RDXToken,
         provider,
-        {...txDefaults, ...{ gas: 5000000 }},
+        {...txDefaults, ...{ gas: 3000000 }},
     );
 
     // Exchange
@@ -63,7 +63,7 @@ export async function runMigrationsAsync(provider: Provider, txDefaults: TxData)
     const exchange = await wrappers.ExchangeContract.deployFrom0xArtifactAsync(
         artifacts.Exchange,
         provider,
-        txDefaults,
+        {...txDefaults, ...{ gas: 6500000 }},
         zrxAssetData,
     );
 
