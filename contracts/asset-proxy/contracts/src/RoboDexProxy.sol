@@ -44,10 +44,10 @@ contract RoboDexProxy is MixinAuthorizable {
                 // Revert if authorized[msg.sender] == false
                 if iszero(sload(keccak256(start, 64))) {
                     // Revert with `Error("SENDER_NOT_AUTHORIZED")`
-                    mstore(0, 0x08c379a000000000000000000000000000000000000000000000000000000000)
-                    mstore(32, 0x0000002000000000000000000000000000000000000000000000000000000000)
-                    mstore(64, 0x0000001553454e4445525f4e4f545f415554484f52495a454400000000000000)
-                    mstore(96, 0)
+                    mstore(0x00, 0x08c379a000000000000000000000000000000000000000000000000000000000)
+                    mstore(0x20, 0x0000002000000000000000000000000000000000000000000000000000000000)
+                    mstore(0x40, 0x0000001553454e4445525f4e4f545f415554484f52495a454400000000000000)
+                    mstore(0x60, 0)
                     revert(0, 100)
                 }
 
@@ -82,11 +82,10 @@ contract RoboDexProxy is MixinAuthorizable {
                 // | Area     | Offset | Length  | Contents                            |
                 // |----------|--------|---------|-------------------------------------|
                 // | Header   | 0      | 4       | function selector                   |
-                // | Params   |        | 704     | function parameters:                |
+                // | Params   |        | 256     | function parameters:                |
                 // |          | 4      | 12 + 20 |   1. token address                  |
-                // |          | 36     | 320     |   2. makerAssetData                 |
-                // |          | 356    | 320     |   3. takerAssetData                 |
-                // |          | 676    | 32      |   4. dexData                        |
+                // |          | 36     | 224     |   2. positionData                   |
+                // |          | 260    | 32      |   3. dexData                        |
 
                 // We construct calldata for the `token.peddle` ABI.
                 // The layout of this calldata is in the table below.
@@ -94,10 +93,12 @@ contract RoboDexProxy is MixinAuthorizable {
                 // | Area     | Offset | Length  | Contents                            |
                 // |----------|--------|---------|-------------------------------------|
                 // | Header   | 0      | 4       | function selector                   |
-                // | Params   |        |         | function parameters:                |
-                // |          | 4      | 320     |   1. makerAssetData                 |
-                // |          | 324    | 320     |   2. takerAssetData                 |
-                // |          | 644    | 32      |   3. dexData                        |
+                // | Params   |        | 352     | function parameters:                |
+                // |          | 4      | 12 + 20 |   1. from                           |
+                // |          | 36     | 12 + 20 |   2. to                             |
+                // |          | 68     | 32      |   3. amount                         |
+                // |          | 100    | 224     |   4. positionData                   |
+                // |          | 324    | 32      |   5. dexData                        |
 
                 /////// Read token transfer parameters from calldata ///////
                 // * The token address is stored in `assetData`.
@@ -118,15 +119,19 @@ contract RoboDexProxy is MixinAuthorizable {
                 // This area holds the 4-byte `peddle` selector.
                 // Any trailing data in peddleSelector will be
                 // overwritten in the next `mstore` call.
-                mstore(0, 0xf4970c9000000000000000000000000000000000000000000000000000000000)
+                // bytes4(keccak256("peddle(address,address,uint256,bytes,bytes)")) = 0xe43926f8
+                mstore(0, 0xe43926f800000000000000000000000000000000000000000000000000000000)
                 
                 /////// Setup Params Area ///////
-                // We copy the fields `makerAssetData`, `takerAssetData` and `dexData` in bulk
+                // We copy the fields `from`, `to` and `amount` in bulk
+                // from our own calldata to the new calldata.
+                calldatacopy(4, 36, 96)
+                // We also copy the fields `positionData` and `dexData` in bulk
                 // from our own asset data to the new calldata.
-                let tokenDataOffset := add(tokenOffset, 32)
-                let tokenDataLength := sub(calldatasize(), tokenDataOffset)
-                let callDataLength := add(tokenDataLength, 4)
-                calldatacopy(4, tokenDataOffset, tokenDataLength)
+                let assetDataOffset := add(tokenOffset, 32)
+                let assetDataLength := sub(calldatasize(), assetDataOffset)
+                let callDataLength := add(100, assetDataLength)
+                calldatacopy(100, assetDataOffset, assetDataLength)
 
                 /////// Call `token.peddle` using the calldata ///////
                 let success := call(
@@ -159,10 +164,10 @@ contract RoboDexProxy is MixinAuthorizable {
                 }
                 
                 // Revert with `Error("TRANSFER_FAILED")`
-                mstore(0, 0x08c379a000000000000000000000000000000000000000000000000000000000)
-                mstore(32, 0x0000002000000000000000000000000000000000000000000000000000000000)
-                mstore(64, 0x0000000f5452414e534645525f4641494c454400000000000000000000000000)
-                mstore(96, 0)
+                mstore(0x00, 0x08c379a000000000000000000000000000000000000000000000000000000000)
+                mstore(0x20, 0x0000002000000000000000000000000000000000000000000000000000000000)
+                mstore(0x40, 0x0000000f5452414e534645525f4641494c454400000000000000000000000000)
+                mstore(0x60, 0)
                 revert(0, 100)
             }
 

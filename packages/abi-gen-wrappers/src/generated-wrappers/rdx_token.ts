@@ -12,23 +12,24 @@ import * as _ from 'lodash';
 
 export type RDXTokenEventArgs =
     | RDXTokenPositionOpenedEventArgs
+    | RDXTokenPositionFilledEventArgs
     | RDXTokenPositionClosedEventArgs
     | RDXTokenTransferEventArgs
     | RDXTokenApprovalEventArgs;
 
 export enum RDXTokenEvents {
     PositionOpened = 'PositionOpened',
+    PositionFilled = 'PositionFilled',
     PositionClosed = 'PositionClosed',
     Transfer = 'Transfer',
     Approval = 'Approval',
 }
 
 export interface RDXTokenPositionOpenedEventArgs extends DecodedLogArgs {
-    positionId: string;
-    baseToken: string;
-    quoteToken: string;
-    makerAddress: string;
-    takerAddress: string;
+    id: string;
+    token: string;
+    maker: string;
+    taker: string;
     tradeType: number;
     amount: BigNumber;
     margin: BigNumber;
@@ -36,11 +37,27 @@ export interface RDXTokenPositionOpenedEventArgs extends DecodedLogArgs {
     closePrice: BigNumber;
 }
 
-export interface RDXTokenPositionClosedEventArgs extends DecodedLogArgs {
-    positionId: string;
-    from: string;
-    to: string;
+export interface RDXTokenPositionFilledEventArgs extends DecodedLogArgs {
+    id: string;
+    token: string;
+    maker: string;
+    taker: string;
+    tradeType: number;
     amount: BigNumber;
+    margin: BigNumber;
+    filled: BigNumber;
+}
+
+export interface RDXTokenPositionClosedEventArgs extends DecodedLogArgs {
+    id: string;
+    token: string;
+    maker: string;
+    taker: string;
+    tradeType: number;
+    amount: BigNumber;
+    margin: BigNumber;
+    filled: BigNumber;
+    pnl: BigNumber;
 }
 
 export interface RDXTokenTransferEventArgs extends DecodedLogArgs {
@@ -60,6 +77,34 @@ export interface RDXTokenApprovalEventArgs extends DecodedLogArgs {
 // tslint:disable:no-parameter-reassignment
 // tslint:disable-next-line:class-name
 export class RDXTokenContract extends BaseContract {
+    public getPositionCount = {
+        async callAsync(
+            maker: string,
+            callData: Partial<CallData> = {},
+            defaultBlock?: BlockParam,
+        ): Promise<BigNumber
+        > {
+            const self = this as any as RDXTokenContract;
+            const encodedData = self._strictEncodeArguments('getPositionCount(address)', [maker
+        ]);
+            const callDataWithDefaults = await BaseContract._applyDefaultsToTxDataAsync(
+                {
+                    to: self.address,
+                    ...callData,
+                    data: encodedData,
+                },
+                self._web3Wrapper.getContractDefaults(),
+            );
+            const rawCallResult = await self._web3Wrapper.callAsync(callDataWithDefaults, defaultBlock);
+            BaseContract._throwIfRevertWithReasonCallResult(rawCallResult);
+            const abiEncoder = self._lookupAbiEncoder('getPositionCount(address)');
+            // tslint:disable boolean-naming
+            const result = abiEncoder.strictDecodeReturnValue<BigNumber
+        >(rawCallResult);
+            // tslint:enable boolean-naming
+            return result;
+        },
+    };
     public name = {
         async callAsync(
             callData: Partial<CallData> = {},
@@ -192,6 +237,34 @@ export class RDXTokenContract extends BaseContract {
             const abiEncoder = self._lookupAbiEncoder('totalSupply()');
             // tslint:disable boolean-naming
             const result = abiEncoder.strictDecodeReturnValue<BigNumber
+        >(rawCallResult);
+            // tslint:enable boolean-naming
+            return result;
+        },
+    };
+    public getPosition = {
+        async callAsync(
+            positionHash: string,
+            callData: Partial<CallData> = {},
+            defaultBlock?: BlockParam,
+        ): Promise<[string, string, string, number, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, number]
+        > {
+            const self = this as any as RDXTokenContract;
+            const encodedData = self._strictEncodeArguments('getPosition(bytes32)', [positionHash
+        ]);
+            const callDataWithDefaults = await BaseContract._applyDefaultsToTxDataAsync(
+                {
+                    to: self.address,
+                    ...callData,
+                    data: encodedData,
+                },
+                self._web3Wrapper.getContractDefaults(),
+            );
+            const rawCallResult = await self._web3Wrapper.callAsync(callDataWithDefaults, defaultBlock);
+            BaseContract._throwIfRevertWithReasonCallResult(rawCallResult);
+            const abiEncoder = self._lookupAbiEncoder('getPosition(bytes32)');
+            // tslint:disable boolean-naming
+            const result = abiEncoder.strictDecodeReturnValue<[string, string, string, number, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, number]
         >(rawCallResult);
             // tslint:enable boolean-naming
             return result;
@@ -397,34 +470,6 @@ export class RDXTokenContract extends BaseContract {
             const abiEncoder = self._lookupAbiEncoder('increaseAllowance(address,uint256)');
             // tslint:disable boolean-naming
             const result = abiEncoder.strictDecodeReturnValue<boolean
-        >(rawCallResult);
-            // tslint:enable boolean-naming
-            return result;
-        },
-    };
-    public getPositionInfo = {
-        async callAsync(
-            positionId: string,
-            callData: Partial<CallData> = {},
-            defaultBlock?: BlockParam,
-        ): Promise<[string, string, string, string, number, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, number]
-        > {
-            const self = this as any as RDXTokenContract;
-            const encodedData = self._strictEncodeArguments('getPositionInfo(bytes32)', [positionId
-        ]);
-            const callDataWithDefaults = await BaseContract._applyDefaultsToTxDataAsync(
-                {
-                    to: self.address,
-                    ...callData,
-                    data: encodedData,
-                },
-                self._web3Wrapper.getContractDefaults(),
-            );
-            const rawCallResult = await self._web3Wrapper.callAsync(callDataWithDefaults, defaultBlock);
-            BaseContract._throwIfRevertWithReasonCallResult(rawCallResult);
-            const abiEncoder = self._lookupAbiEncoder('getPositionInfo(bytes32)');
-            // tslint:disable boolean-naming
-            const result = abiEncoder.strictDecodeReturnValue<[string, string, string, string, number, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, number]
         >(rawCallResult);
             // tslint:enable boolean-naming
             return result;
@@ -684,16 +729,50 @@ export class RDXTokenContract extends BaseContract {
             return result;
         },
     };
+    public getPositionHash = {
+        async callAsync(
+            maker: string,
+            index: BigNumber,
+            callData: Partial<CallData> = {},
+            defaultBlock?: BlockParam,
+        ): Promise<string
+        > {
+            const self = this as any as RDXTokenContract;
+            const encodedData = self._strictEncodeArguments('getPositionHash(address,uint64)', [maker,
+        index
+        ]);
+            const callDataWithDefaults = await BaseContract._applyDefaultsToTxDataAsync(
+                {
+                    to: self.address,
+                    ...callData,
+                    data: encodedData,
+                },
+                self._web3Wrapper.getContractDefaults(),
+            );
+            const rawCallResult = await self._web3Wrapper.callAsync(callDataWithDefaults, defaultBlock);
+            BaseContract._throwIfRevertWithReasonCallResult(rawCallResult);
+            const abiEncoder = self._lookupAbiEncoder('getPositionHash(address,uint64)');
+            // tslint:disable boolean-naming
+            const result = abiEncoder.strictDecodeReturnValue<string
+        >(rawCallResult);
+            // tslint:enable boolean-naming
+            return result;
+        },
+    };
     public peddle = {
         async sendTransactionAsync(
-            makerAssetData: string,
-            takerAssetData: string,
+            from: string,
+            to: string,
+            amount: BigNumber,
+            positionData: string,
             dexData: string,
             txData: Partial<TxData> = {},
         ): Promise<string> {
             const self = this as any as RDXTokenContract;
-            const encodedData = self._strictEncodeArguments('peddle(bytes,bytes,bytes)', [makerAssetData,
-    takerAssetData,
+            const encodedData = self._strictEncodeArguments('peddle(address,address,uint256,bytes,bytes)', [from,
+    to,
+    amount,
+    positionData,
     dexData
     ]);
             const txDataWithDefaults = await BaseContract._applyDefaultsToTxDataAsync(
@@ -705,8 +784,10 @@ export class RDXTokenContract extends BaseContract {
                 self._web3Wrapper.getContractDefaults(),
                 self.peddle.estimateGasAsync.bind(
                     self,
-                    makerAssetData,
-                    takerAssetData,
+                    from,
+                    to,
+                    amount,
+                    positionData,
                     dexData
                 ),
             );
@@ -714,14 +795,18 @@ export class RDXTokenContract extends BaseContract {
             return txHash;
         },
         async estimateGasAsync(
-            makerAssetData: string,
-            takerAssetData: string,
+            from: string,
+            to: string,
+            amount: BigNumber,
+            positionData: string,
             dexData: string,
             txData: Partial<TxData> = {},
         ): Promise<number> {
             const self = this as any as RDXTokenContract;
-            const encodedData = self._strictEncodeArguments('peddle(bytes,bytes,bytes)', [makerAssetData,
-    takerAssetData,
+            const encodedData = self._strictEncodeArguments('peddle(address,address,uint256,bytes,bytes)', [from,
+    to,
+    amount,
+    positionData,
     dexData
     ]);
             const txDataWithDefaults = await BaseContract._applyDefaultsToTxDataAsync(
@@ -736,28 +821,36 @@ export class RDXTokenContract extends BaseContract {
             return gas;
         },
         getABIEncodedTransactionData(
-            makerAssetData: string,
-            takerAssetData: string,
+            from: string,
+            to: string,
+            amount: BigNumber,
+            positionData: string,
             dexData: string,
         ): string {
             const self = this as any as RDXTokenContract;
-            const abiEncodedTransactionData = self._strictEncodeArguments('peddle(bytes,bytes,bytes)', [makerAssetData,
-    takerAssetData,
+            const abiEncodedTransactionData = self._strictEncodeArguments('peddle(address,address,uint256,bytes,bytes)', [from,
+    to,
+    amount,
+    positionData,
     dexData
     ]);
             return abiEncodedTransactionData;
         },
         async callAsync(
-            makerAssetData: string,
-            takerAssetData: string,
+            from: string,
+            to: string,
+            amount: BigNumber,
+            positionData: string,
             dexData: string,
             callData: Partial<CallData> = {},
             defaultBlock?: BlockParam,
         ): Promise<boolean
         > {
             const self = this as any as RDXTokenContract;
-            const encodedData = self._strictEncodeArguments('peddle(bytes,bytes,bytes)', [makerAssetData,
-        takerAssetData,
+            const encodedData = self._strictEncodeArguments('peddle(address,address,uint256,bytes,bytes)', [from,
+        to,
+        amount,
+        positionData,
         dexData
         ]);
             const callDataWithDefaults = await BaseContract._applyDefaultsToTxDataAsync(
@@ -770,7 +863,7 @@ export class RDXTokenContract extends BaseContract {
             );
             const rawCallResult = await self._web3Wrapper.callAsync(callDataWithDefaults, defaultBlock);
             BaseContract._throwIfRevertWithReasonCallResult(rawCallResult);
-            const abiEncoder = self._lookupAbiEncoder('peddle(bytes,bytes,bytes)');
+            const abiEncoder = self._lookupAbiEncoder('peddle(address,address,uint256,bytes,bytes)');
             // tslint:disable boolean-naming
             const result = abiEncoder.strictDecodeReturnValue<boolean
         >(rawCallResult);
